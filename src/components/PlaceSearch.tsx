@@ -23,10 +23,10 @@ interface PlaceSearchProps {
   label: string
   /** Text shown when no place is selected. */
   placeholder: string
-  /** Label of the selected place, or an empty string. */
+  /** City name of the selected place, or an empty string. */
   value: string
-  /** Called with the chosen point and its display label. */
-  onSelect: (point: LatLng, label: string) => void
+  /** Called with the chosen point and its city name. */
+  onSelect: (point: LatLng, name: string) => void
 }
 
 /** Minimum characters before the geocoder is queried. */
@@ -46,8 +46,8 @@ type SearchStatus = 'idle' | 'loading' | 'error'
  * @param id - Identifier of the trigger button, for the associated label.
  * @param label - Accessible label for the search control.
  * @param placeholder - Text shown when no place is selected.
- * @param value - Label of the selected place, or an empty string.
- * @param onSelect - Called with the chosen point and its display label.
+ * @param value - City name of the selected place, or an empty string.
+ * @param onSelect - Called with the chosen point and its city name.
  * @returns The city search combobox.
  */
 export function PlaceSearch({
@@ -118,7 +118,7 @@ export function PlaceSearch({
    */
   function selectPlace(place: Place): void {
     setOpen(false)
-    onSelect(place.point, place.label)
+    onSelect(place.point, place.name)
   }
 
   return (

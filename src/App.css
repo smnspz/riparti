@@ -29,3 +29,17 @@
   background: #ffffff;
   color: var(--marker-color);
 }
+
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+}
+
+.dark .leaflet-control-attribution,
+.dark .leaflet-control-zoom a {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.dark .leaflet-control-attribution a {
+  color: var(--primary);
+}

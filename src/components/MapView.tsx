@@ -10,6 +10,7 @@ import {
 } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useI18n } from '@/i18n'
+import { formatLegName } from '@/lib/format'
 import { haversineKm, type LatLng } from '@/lib/geo'
 import type { LegDraft } from '@/types'
 
@@ -186,7 +187,10 @@ export function MapView({ legs }: MapViewProps) {
             >
               <Tooltip sticky>
                 {t('map.legTooltip', {
-                  n: route.index + 1,
+                  name: formatLegName(
+                    route.leg,
+                    t('leg.title', { n: route.index + 1 }),
+                  ),
                   distance:
                     route.leg.distanceKm.trim() === ''
                       ? formatDistanceKm(
@@ -213,7 +217,7 @@ export function MapView({ legs }: MapViewProps) {
       {showEmptyHint && (
         <div
           role="status"
-          className="absolute top-3 left-1/2 z-[1000] max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-full border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
+          className="absolute top-3 left-1/2 z-[1000] max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
         >
           {t('map.emptyHint')}
         </div>

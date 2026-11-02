@@ -5,9 +5,9 @@ import type { TripResult } from '@/backseat'
 import { LegEditor } from '@/components/LegEditor'
 import { MapView } from '@/components/MapView'
 import { PassengerList } from '@/components/PassengerList'
+import { SettingsDialog } from '@/components/SettingsDialog'
 import { TripResults } from '@/components/TripResults'
 import { Button } from '@/components/ui/button'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useI18n } from '@/i18n'
 import type { Language, Translate } from '@/i18n'
 import { translateTripError } from '@/i18n/tripErrors'
@@ -36,8 +36,8 @@ const SEED_LEG_ID = 'seed-leg'
 
 /** Localized labels for the example route. */
 const SEED_LABELS: Record<Language, { start: string; end: string }> = {
-  it: { start: 'Roma, Lazio, Italia', end: 'Firenze, Toscana, Italia' },
-  en: { start: 'Rome, Lazio, Italy', end: 'Florence, Tuscany, Italy' },
+  it: { start: 'Roma', end: 'Firenze' },
+  en: { start: 'Rome', end: 'Florence' },
 }
 
 /**
@@ -104,7 +104,7 @@ function computeTrip(
  */
 export default function App() {
   // Initializations
-  const { language, setLanguage, t, formatDistanceKm } = useI18n()
+  const { language, t, formatDistanceKm } = useI18n()
   const [passengers, setPassengers] =
     useState<PassengerDraft[]>(SEED_PASSENGERS)
   const [legs, setLegs] = useState<LegDraft[]>(() => [
@@ -235,8 +235,8 @@ export default function App() {
       return
     }
 
-    // Reuse the last leg's fuel settings as a sensible default
-    const template = legs.at(-1)
+    // Reuse the first leg's fuel settings as a sensible default
+    const template = legs.at(0)
     const leg: LegDraft = {
       id: crypto.randomUUID(),
       start: null,
@@ -255,8 +255,8 @@ export default function App() {
       passengerIds: passengers.map((passenger) => passenger.id),
     }
 
-    // Add the leg; the user picks its cities with the search fields
-    setLegs((currentLegs) => [...currentLegs, leg])
+    // Prepend the leg so it appears above the existing ones
+    setLegs((currentLegs) => [leg, ...currentLegs])
   }
 
   /**
@@ -442,25 +442,9 @@ export default function App() {
           <h1 className="text-xl font-semibold tracking-tight">Backseat</h1>
           <p className="text-sm text-muted-foreground">{t('app.tagline')}</p>
         </div>
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          size="sm"
-          value={language}
-          onValueChange={(value) => {
-            if (value === 'it' || value === 'en') {
-              setLanguage(value)
-            }
-          }}
-          aria-label={t('language.label')}
-        >
-          <ToggleGroupItem value="it" aria-label={t('language.italian')}>
-            IT
-          </ToggleGroupItem>
-          <ToggleGroupItem value="en" aria-label={t('language.english')}>
-            EN
-          </ToggleGroupItem>
-        </ToggleGroup>
+        <div className="flex items-center gap-2">
+          <SettingsDialog />
+        </div>
       </header>
 
       <main className="grid min-h-0 flex-1 grid-cols-[minmax(360px,430px)_1fr] max-md:grid-cols-1">
@@ -530,13 +514,13 @@ export default function App() {
           </section>
 
           <TripResults
-            legsCount={legs.length}
+            legs={legs}
             result={calculation.result}
             error={calculation.error}
           />
         </aside>
 
-        <section className="relative min-h-0 border-l max-md:order-1 max-md:h-[52dvh] max-md:border-b max-md:border-l-0">
+        <section className="relative isolate min-h-0 border-l max-md:order-1 max-md:h-[52dvh] max-md:border-b max-md:border-l-0">
           <MapView legs={legs} />
         </section>
       </main>

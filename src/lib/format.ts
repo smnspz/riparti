@@ -1,4 +1,5 @@
 import type { Language } from '@/i18n/messages'
+import type { LegDraft } from '@/types'
 
 /** BCP 47 locales used for number and currency formatting. */
 const LOCALES: Record<Language, string> = {
@@ -67,4 +68,28 @@ export function formatLiters(
   language: Language = 'it',
 ): string {
   return decimalFormatters[language].format(liters)
+}
+
+/**
+ * Build the display name of a leg from its endpoints.
+ *
+ * @param leg - Leg to name.
+ * @param fallbackName - Name used while the leg lacks both endpoints.
+ * @returns `start - end` once both labels exist, otherwise the fallback name.
+ */
+export function formatLegName(
+  leg: LegDraft,
+  fallbackName: string,
+): string {
+  // Initializations
+  const start = leg.startLabel.trim()
+  const end = leg.endLabel.trim()
+
+  // Keep the numbered default until both endpoints are known
+  if (start === '' || end === '') {
+    return fallbackName
+  }
+
+  // Return the route name
+  return `${start} - ${end}`
 }

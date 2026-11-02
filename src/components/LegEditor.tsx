@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useI18n } from '@/i18n'
+import { formatLegName } from '@/lib/format'
 import type { LatLng } from '@/lib/geo'
 import type { RoutePreference } from '@/lib/routing'
 import { cn } from '@/lib/utils'
@@ -74,6 +75,7 @@ export function LegEditor({
   const hasTollFreeOption = leg.routeOptions.some(
     (option) => option.preference === 'no-tolls',
   )
+  const legName = formatLegName(leg, t('leg.title', { n: index + 1 }))
 
   return (
     <Card
@@ -81,8 +83,8 @@ export function LegEditor({
       className="animate-in duration-200 fade-in-0 slide-in-from-top-1 motion-reduce:animate-none"
     >
       <CardHeader>
-        <CardTitle className="text-sm font-semibold">
-          {t('leg.title', { n: index + 1 })}
+        <CardTitle className="truncate text-sm font-semibold" title={legName}>
+          {legName}
         </CardTitle>
         <CardAction>
           <Button
@@ -334,7 +336,7 @@ export function LegEditor({
                   key={passenger.id}
                   value={passenger.id}
                   aria-label={passenger.name}
-                  className="rounded-full px-3 data-[state=on]:border-primary/40 data-[state=on]:bg-primary/10 data-[state=on]:text-primary data-[state=on]:hover:bg-primary/15"
+                  className="rounded-lg px-3 data-[state=on]:border-primary/40 data-[state=on]:bg-primary/10 data-[state=on]:text-primary data-[state=on]:hover:bg-primary/15"
                 >
                   {passenger.name}
                 </ToggleGroupItem>

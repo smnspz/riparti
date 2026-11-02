@@ -9,10 +9,12 @@ import {
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useI18n } from '@/i18n'
+import { formatLegName } from '@/lib/format'
+import type { LegDraft } from '@/types'
 
 interface TripResultsProps {
-  /** Number of legs in the editor, used to distinguish empty from invalid trips. */
-  legsCount: number
+  /** Legs currently declared in the editor. */
+  legs: LegDraft[]
   /** Calculation result, or null when the trip is invalid. */
   result: TripResult | null
   /** Validation message, or null when the trip is valid. */
@@ -22,14 +24,18 @@ interface TripResultsProps {
 /**
  * Card showing the trip total, each passenger's share, and the leg breakdown.
  *
- * @param legsCount - Number of legs in the editor.
+ * @param legs - Legs currently declared in the editor.
  * @param result - Calculation result, or null when the trip is invalid.
  * @param error - Validation message, or null when the trip is valid.
  * @returns The results card.
  */
-export function TripResults({ legsCount, result, error }: TripResultsProps) {
+export function TripResults({ legs, result, error }: TripResultsProps) {
   // Initializations
   const { t, formatDistanceKm, formatEuros, formatLiters } = useI18n()
+  const legsCount = legs.length
+  const legNames = legs.map((leg, index) =>
+    formatLegName(leg, t('leg.title', { n: index + 1 })),
+  )
   const namesById = new Map(
     (result?.passengers ?? []).map((passenger) => [
       passenger.id,
@@ -99,7 +105,7 @@ export function TripResults({ legsCount, result, error }: TripResultsProps) {
                   }
                 >
                   <div className="text-sm font-medium text-foreground">
-                    {t('results.leg', { n: leg.index + 1 })}
+                    {legNames[leg.index] ?? t('leg.title', { n: leg.index + 1 })}
                     {leg.roundTrip ? ` · ${t('results.roundTrip')}` : ''}
                   </div>
                   <div>

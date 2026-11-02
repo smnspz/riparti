@@ -14,6 +14,20 @@ export const it = {
   'language.italian': 'Italiano',
   'language.english': 'Inglese',
 
+  'settings.title': 'Impostazioni',
+  'settings.description': "Lingua e aspetto dell'app.",
+  'settings.open': 'Apri impostazioni',
+  'settings.close': 'Chiudi impostazioni',
+  'settings.language': 'Lingua',
+  'settings.theme': 'Tema',
+
+  'theme.system': 'Sistema',
+  'theme.systemHint': 'Segue le impostazioni del dispositivo',
+  'theme.light': 'Chiaro',
+  'theme.lightHint': 'Sempre chiaro',
+  'theme.dark': 'Scuro',
+  'theme.darkHint': 'Sempre scuro',
+
   'passengers.title': 'Passeggeri',
   'passengers.empty': 'Aggiungi almeno un passeggero per iniziare un viaggio.',
   'passengers.remove': 'Rimuovi {name}',
@@ -69,13 +83,12 @@ export const it = {
   'results.empty': 'Aggiungi una tratta per vedere la divisione.',
   'results.total': 'Totale viaggio',
   'results.perLeg': 'Per tratta',
-  'results.leg': 'Tratta {n}',
   'results.roundTrip': 'andata e ritorno',
   'results.legSummary':
     '{distance} km · {liters} L · carburante {fuel} · pedaggi {tolls}',
   'results.legTotal': 'Totale {total} · {shares}',
 
-  'map.legTooltip': 'Tratta {n} · {distance} km',
+  'map.legTooltip': '{name} · {distance} km',
   'map.emptyHint':
     'Aggiungi una tratta, poi cerca le città di partenza e arrivo per impostare il percorso.',
   'map.attribution': 'Percorsi stradali di Valhalla',
@@ -105,6 +118,20 @@ export const en: Record<TranslationKey, string> = {
   'language.label': 'Language',
   'language.italian': 'Italian',
   'language.english': 'English',
+
+  'settings.title': 'Settings',
+  'settings.description': 'Language and appearance.',
+  'settings.open': 'Open settings',
+  'settings.close': 'Close settings',
+  'settings.language': 'Language',
+  'settings.theme': 'Theme',
+
+  'theme.system': 'System',
+  'theme.systemHint': 'Follows your device setting',
+  'theme.light': 'Light',
+  'theme.lightHint': 'Always light',
+  'theme.dark': 'Dark',
+  'theme.darkHint': 'Always dark',
 
   'passengers.title': 'Passengers',
   'passengers.empty': 'Add at least one passenger to start a trip.',
@@ -160,12 +187,11 @@ export const en: Record<TranslationKey, string> = {
   'results.empty': 'Add a leg to see the split.',
   'results.total': 'Total trip',
   'results.perLeg': 'Per leg',
-  'results.leg': 'Leg {n}',
   'results.roundTrip': 'round trip',
   'results.legSummary': '{distance} km · {liters} L · fuel {fuel} · tolls {tolls}',
   'results.legTotal': 'Total {total} · {shares}',
 
-  'map.legTooltip': 'Leg {n} · {distance} km',
+  'map.legTooltip': '{name} · {distance} km',
   'map.emptyHint':
     'Add a leg, then search its start and end cities to set its route.',
   'map.attribution': 'Road routes by Valhalla',

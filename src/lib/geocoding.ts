@@ -10,7 +10,7 @@ export interface Place {
   name: string
   /** Region and country shown under the city name. */
   detail: string
-  /** Full label stored in the search field. */
+  /** Full label with region and country, available for disambiguation. */
   label: string
   /** Coordinates of the city centre. */
   point: LatLng

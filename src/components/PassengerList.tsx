@@ -100,7 +100,7 @@ export function PassengerList({
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  className="size-4 rounded-full text-muted-foreground hover:text-foreground"
+                  className="size-4 rounded-sm text-muted-foreground hover:text-foreground"
                   onClick={() => onRemove(passenger.id)}
                   aria-label={t('passengers.remove', {
                     name: passenger.name,

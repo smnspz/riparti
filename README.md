@@ -20,10 +20,14 @@ pnpm dev
 The app opens with a sample Rome → Florence leg so the map and the result are
 immediately visible.
 
-- **Add leg** creates a leg; search its start and end cities to build the route.
+- **Add leg** creates a leg above the existing ones; search its start and end
+  cities to build the route. A leg keeps its numbered default
+  (**Leg 1**, **Leg 2**, …) until both cities are chosen, then it takes the
+  route name (for example **Rome - Florence**).
 - **Search start city / Search end city** find a city by typing, with an
-  autocomplete list from Photon. Choosing a suggestion sets the endpoint and
-  requests the route immediately.
+  autocomplete list from Photon. Suggestions show the region and country; the
+  chosen field keeps just the city name. Choosing a suggestion sets the
+  endpoint and requests the route immediately.
 - **Route** appears when a toll-free alternative exists: choose **Fastest**
   (which may use tolls) or **Avoid tolls**. The map, kilometre field, and trip
   total update immediately. Choosing a toll-free route sets the toll amount to
@@ -35,9 +39,11 @@ immediately visible.
 - The result card updates live with the trip total, each passenger's share, and
   the per-leg fuel/litre/toll breakdown.
 
-The interface is available in Italian (the default) and English. Use the
-**IT / EN** switch in the header; the choice is saved in the browser. Currency,
-distances, and city search results follow the selected language.
+The interface is available in Italian (the default) and English, and the theme
+can follow the operating system (the default), stay light, or stay dark. Open
+the **settings** (gear button in the header) to change either; both choices are
+saved in the browser. Currency, distances, and city search results follow the
+selected language, and map tiles are darkened with the dark theme.
 
 Map tiles come from OpenStreetMap, city search from Photon, and routing from the
 public Valhalla demo server; all three need network access and none needs an API
