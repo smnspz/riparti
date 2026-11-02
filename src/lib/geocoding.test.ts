@@ -78,6 +78,19 @@ describe('searchCities', () => {
     expect(requestUrl).toContain('limit=6')
   })
 
+  it('requests results in the requested language', async () => {
+    // Initializations
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(PHOTON_PAYLOAD))
+    vi.stubGlobal('fetch', fetchMock)
+
+    // Search with an explicit language
+    await searchCities('Florence', { language: 'it' })
+
+    // Check the request URL
+    const requestUrl = String(fetchMock.mock.calls[0]?.[0])
+    expect(requestUrl).toContain('lang=it')
+  })
+
   it('returns no results for a blank query without calling the service', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)

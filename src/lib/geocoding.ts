@@ -39,20 +39,33 @@ interface PhotonResponse {
 }
 
 /**
+ * Options accepted by the city search.
+ */
+export interface SearchCitiesOptions {
+  /** Optional abort signal for a superseded request. */
+  signal?: AbortSignal
+  /** Language used for city and region names. */
+  language?: string
+}
+
+/**
  * Search cities by name using the Photon geocoder.
  *
  * Results are limited to city-level places, so county, state, and country
  * duplicates of the same name do not clutter the suggestions.
  *
  * @param query - Text typed by the user.
- * @param signal - Optional abort signal for a superseded request.
+ * @param options - Abort signal and language for the request.
  * @returns Matching cities, best match first.
  * @throws {Error} If the request fails.
  */
 export async function searchCities(
   query: string,
-  signal?: AbortSignal,
+  options: SearchCitiesOptions = {},
 ): Promise<Place[]> {
+  // Initializations
+  const { signal, language = 'en' } = options
+
   // Ignore blank queries without calling the service
   const trimmedQuery = query.trim()
   if (trimmedQuery === '') {
@@ -63,7 +76,7 @@ export async function searchCities(
   const params = new URLSearchParams({
     q: trimmedQuery,
     limit: String(SEARCH_LIMIT),
-    lang: 'en',
+    lang: language,
     layer: 'city',
   })
   const response = await fetch(`${GEOCODING_ENDPOINT}?${params}`, { signal })

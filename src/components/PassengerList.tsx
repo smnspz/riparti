@@ -10,6 +10,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { useI18n } from '@/i18n'
+import type { TranslationKey } from '@/i18n'
 import type { PassengerDraft } from '@/types'
 
 interface PassengerListProps {
@@ -35,8 +37,9 @@ export function PassengerList({
   onRemove,
 }: PassengerListProps) {
   // Initializations
+  const { t } = useI18n()
   const [name, setName] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<TranslationKey | null>(null)
 
   /**
    * Validate the typed name and add the passenger when it is usable.
@@ -50,7 +53,7 @@ export function PassengerList({
     // Validate the typed name
     const trimmedName = name.trim()
     if (trimmedName === '') {
-      setError('Enter a passenger name.')
+      setError('passengers.errorEmpty')
       return
     }
     if (
@@ -58,7 +61,7 @@ export function PassengerList({
         (passenger) => passenger.name.toLowerCase() === trimmedName.toLowerCase(),
       )
     ) {
-      setError('That passenger already exists.')
+      setError('passengers.errorDuplicate')
       return
     }
 
@@ -71,7 +74,9 @@ export function PassengerList({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base font-semibold">Passengers</CardTitle>
+        <CardTitle className="text-base font-semibold">
+          {t('passengers.title')}
+        </CardTitle>
         <CardAction>
           <Badge variant="secondary">{passengers.length}</Badge>
         </CardAction>
@@ -80,7 +85,7 @@ export function PassengerList({
       <CardContent className="flex flex-col gap-4">
         {passengers.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Add at least one passenger to start a trip.
+            {t('passengers.empty')}
           </p>
         ) : (
           <div className="flex flex-wrap gap-2">
@@ -97,7 +102,9 @@ export function PassengerList({
                   size="icon-xs"
                   className="size-4 rounded-full text-muted-foreground hover:text-foreground"
                   onClick={() => onRemove(passenger.id)}
-                  aria-label={`Remove ${passenger.name}`}
+                  aria-label={t('passengers.remove', {
+                    name: passenger.name,
+                  })}
                 >
                   <X className="size-3" />
                 </Button>
@@ -108,8 +115,8 @@ export function PassengerList({
 
         <form className="flex gap-2" onSubmit={handleSubmit}>
           <Input
-            aria-label="Passenger name"
-            placeholder="Add a passenger"
+            aria-label={t('passengers.nameLabel')}
+            placeholder={t('passengers.addPlaceholder')}
             value={name}
             onChange={(event) => {
               setName(event.target.value)
@@ -118,13 +125,13 @@ export function PassengerList({
           />
           <Button type="submit" variant="outline">
             <Plus />
-            Add
+            {t('passengers.add')}
           </Button>
         </form>
 
         {error !== null && (
           <p className="text-sm text-destructive" role="alert">
-            {error}
+            {t(error)}
           </p>
         )}
       </CardContent>

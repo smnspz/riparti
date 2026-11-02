@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { formatDistanceKm } from '@/lib/format'
+import { useI18n } from '@/i18n'
 import type { LatLng } from '@/lib/geo'
 import type { RoutePreference } from '@/lib/routing'
 import { cn } from '@/lib/utils'
@@ -70,6 +70,7 @@ export function LegEditor({
   onChangePassengers,
 }: LegEditorProps) {
   // Initializations
+  const { t, formatDistanceKm, formatEuros } = useI18n()
   const hasTollFreeOption = leg.routeOptions.some(
     (option) => option.preference === 'no-tolls',
   )
@@ -81,7 +82,7 @@ export function LegEditor({
     >
       <CardHeader>
         <CardTitle className="text-sm font-semibold">
-          Leg {index + 1}
+          {t('leg.title', { n: index + 1 })}
         </CardTitle>
         <CardAction>
           <Button
@@ -89,7 +90,7 @@ export function LegEditor({
             variant="ghost"
             size="icon-sm"
             onClick={() => onRemove(leg.id)}
-            aria-label={`Remove leg ${index + 1}`}
+            aria-label={t('leg.remove', { n: index + 1 })}
           >
             <Trash2 />
           </Button>
@@ -103,12 +104,12 @@ export function LegEditor({
               htmlFor={`leg-${leg.id}-start`}
               className="text-xs font-medium text-muted-foreground"
             >
-              From
+              {t('leg.from')}
             </Label>
             <PlaceSearch
               id={`leg-${leg.id}-start`}
-              label={`Start city of leg ${index + 1}`}
-              placeholder="Search start city"
+              label={t('leg.startLabel', { n: index + 1 })}
+              placeholder={t('leg.searchStart')}
               value={leg.startLabel}
               onSelect={(point, label) =>
                 onSelectPlace(leg.id, 'start', point, label)
@@ -120,12 +121,12 @@ export function LegEditor({
               htmlFor={`leg-${leg.id}-end`}
               className="text-xs font-medium text-muted-foreground"
             >
-              To
+              {t('leg.to')}
             </Label>
             <PlaceSearch
               id={`leg-${leg.id}-end`}
-              label={`End city of leg ${index + 1}`}
-              placeholder="Search end city"
+              label={t('leg.endLabel', { n: index + 1 })}
+              placeholder={t('leg.searchEnd')}
               value={leg.endLabel}
               onSelect={(point, label) =>
                 onSelectPlace(leg.id, 'end', point, label)
@@ -137,7 +138,7 @@ export function LegEditor({
         {leg.routeOptions.length > 1 && (
           <fieldset className="flex animate-in flex-col gap-2 duration-200 fade-in-0 slide-in-from-top-1 motion-reduce:animate-none">
             <legend className="text-xs font-medium text-muted-foreground">
-              Route
+              {t('leg.route')}
             </legend>
             <RadioGroup
               value={leg.routePreference ?? ''}
@@ -167,12 +168,12 @@ export function LegEditor({
                   <span className="flex flex-col gap-0.5">
                     <span className="text-sm font-medium">
                       {option.preference === 'no-tolls'
-                        ? 'Avoid tolls'
-                        : 'Fastest'}
+                        ? t('leg.avoidTolls')
+                        : t('leg.fastest')}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {formatDistanceKm(option.distanceKm)} km ·{' '}
-                      {option.hasToll ? 'uses tolls' : 'no tolls'}
+                      {option.hasToll ? t('leg.usesTolls') : t('leg.noTolls')}
                     </span>
                   </span>
                 </Label>
@@ -183,7 +184,7 @@ export function LegEditor({
 
         {hasTollFreeOption && (
           <p className="text-xs text-muted-foreground">
-            Choosing Avoid tolls sets the toll amount to €0.00.
+            {t('leg.tollFreeHint', { amount: formatEuros(0) })}
           </p>
         )}
 
@@ -191,7 +192,7 @@ export function LegEditor({
           <div
             className="flex flex-col gap-2"
             role="status"
-            aria-label="Finding the road route"
+            aria-label={t('leg.findingRoute')}
           >
             {[0, 1].map((row) => (
               <div
@@ -212,8 +213,7 @@ export function LegEditor({
           <Alert variant="destructive" className="py-2">
             <TriangleAlert />
             <AlertDescription className="text-xs">
-              Road routing unavailable; using a straight line. Adjust km
-              manually.
+              {t('leg.routeError')}
             </AlertDescription>
           </Alert>
         )}
@@ -224,7 +224,7 @@ export function LegEditor({
               htmlFor={`leg-${leg.id}-distance`}
               className="text-xs font-medium text-muted-foreground"
             >
-              Distance (km)
+              {t('leg.distance')}
             </Label>
             <Input
               id={`leg-${leg.id}-distance`}
@@ -241,7 +241,7 @@ export function LegEditor({
               htmlFor={`leg-${leg.id}-consumption`}
               className="text-xs font-medium text-muted-foreground"
             >
-              Consumption (L/100 km)
+              {t('leg.consumption')}
             </Label>
             <Input
               id={`leg-${leg.id}-consumption`}
@@ -258,7 +258,7 @@ export function LegEditor({
               htmlFor={`leg-${leg.id}-fuel-price`}
               className="text-xs font-medium text-muted-foreground"
             >
-              Fuel price (€/L)
+              {t('leg.fuelPrice')}
             </Label>
             <Input
               id={`leg-${leg.id}-fuel-price`}
@@ -275,7 +275,7 @@ export function LegEditor({
               htmlFor={`leg-${leg.id}-tolls`}
               className="text-xs font-medium text-muted-foreground"
             >
-              Tolls (€)
+              {t('leg.tolls')}
             </Label>
             <Input
               id={`leg-${leg.id}-tolls`}
@@ -301,9 +301,9 @@ export function LegEditor({
             htmlFor={`leg-${leg.id}-round-trip`}
             className="font-normal"
           >
-            Round trip{' '}
+            {t('leg.roundTrip')}{' '}
             <span className="text-muted-foreground">
-              doubles km and tolls
+              {t('leg.roundTripHint')}
             </span>
           </Label>
         </div>
@@ -312,11 +312,11 @@ export function LegEditor({
 
         <fieldset className="flex flex-col gap-2.5">
           <legend className="text-xs font-medium text-muted-foreground">
-            Passengers on this leg
+            {t('leg.passengers')}
           </legend>
           {passengers.length === 0 ? (
             <p className="text-xs text-muted-foreground">
-              Add a passenger first.
+              {t('leg.addPassengerFirst')}
             </p>
           ) : (
             <ToggleGroup
@@ -327,7 +327,7 @@ export function LegEditor({
                 onChangePassengers(leg.id, value)
               }
               className="w-full flex-wrap justify-start"
-              aria-label={`Passengers on leg ${index + 1}`}
+              aria-label={t('leg.passengersOnLeg', { n: index + 1 })}
             >
               {passengers.map((passenger) => (
                 <ToggleGroupItem

@@ -9,7 +9,7 @@ import {
   useMap,
 } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { formatDistanceKm } from '@/lib/format'
+import { useI18n } from '@/i18n'
 import { haversineKm, type LatLng } from '@/lib/geo'
 import type { LegDraft } from '@/types'
 
@@ -149,6 +149,7 @@ function FitRoute({
  */
 export function MapView({ legs }: MapViewProps) {
   // Initializations
+  const { t, formatDistanceKm } = useI18n()
   const routes = collectRoutes(legs)
   const points = routes.flatMap((route) => [route.start, route.end])
   const pointsKey = routes
@@ -184,11 +185,15 @@ export function MapView({ legs }: MapViewProps) {
               }}
             >
               <Tooltip sticky>
-                Leg {route.index + 1} ·{' '}
-                {route.leg.distanceKm.trim() === ''
-                  ? formatDistanceKm(haversineKm(route.start, route.end))
-                  : route.leg.distanceKm}{' '}
-                km
+                {t('map.legTooltip', {
+                  n: route.index + 1,
+                  distance:
+                    route.leg.distanceKm.trim() === ''
+                      ? formatDistanceKm(
+                          haversineKm(route.start, route.end),
+                        )
+                      : route.leg.distanceKm,
+                })}
               </Tooltip>
             </Polyline>
             <Marker
@@ -210,12 +215,12 @@ export function MapView({ legs }: MapViewProps) {
           role="status"
           className="absolute top-3 left-1/2 z-[1000] max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-full border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
         >
-          Add a leg, then search its start and end cities to set its route.
+          {t('map.emptyHint')}
         </div>
       )}
 
       <p className="absolute bottom-3 left-3 z-[1000] rounded-md border bg-background/90 px-2 py-1 text-[0.7rem] text-muted-foreground">
-        Road routes by Valhalla
+        {t('map.attribution')}
       </p>
     </div>
   )

@@ -7,7 +7,11 @@ import { MapView } from '@/components/MapView'
 import { PassengerList } from '@/components/PassengerList'
 import { TripResults } from '@/components/TripResults'
 import { Button } from '@/components/ui/button'
-import { formatDistanceKm } from '@/lib/format'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { useI18n } from '@/i18n'
+import type { Language, Translate } from '@/i18n'
+import { translateTripError } from '@/i18n/tripErrors'
+import { formatDistanceKm as formatDistanceKmForLanguage } from '@/lib/format'
 import { haversineKm, type LatLng } from '@/lib/geo'
 import { fetchRoadRoutes, type RoutePreference } from '@/lib/routing'
 import { buildTrip } from '@/lib/trip'
@@ -27,23 +31,47 @@ const ROME: LatLng = { lat: 41.9028, lng: 12.4964 }
 /** End of the example route. */
 const FLORENCE: LatLng = { lat: 43.7696, lng: 11.2558 }
 
-/** Example leg shown on first load so the map and results are not empty. */
-const SEED_LEG: LegDraft = {
-  id: 'seed-leg',
-  start: ROME,
-  startLabel: 'Rome, Lazio, Italy',
-  end: FLORENCE,
-  endLabel: 'Florence, Tuscany, Italy',
-  route: null,
-  routeOptions: [],
-  routePreference: null,
-  routeStatus: 'idle',
-  distanceKm: formatDistanceKm(haversineKm(ROME, FLORENCE)),
-  fuelConsumption: '6.5',
-  fuelPriceEuros: '1.89',
-  tollsEuros: '15.00',
-  roundTrip: false,
-  passengerIds: ['alice', 'bob'],
+/** Identifier of the example leg shown on first load. */
+const SEED_LEG_ID = 'seed-leg'
+
+/** Localized labels for the example route. */
+const SEED_LABELS: Record<Language, { start: string; end: string }> = {
+  it: { start: 'Roma, Lazio, Italia', end: 'Firenze, Toscana, Italia' },
+  en: { start: 'Rome, Lazio, Italy', end: 'Florence, Tuscany, Italy' },
+}
+
+/**
+ * Build the example leg shown on first load so the map and results are not
+ * empty.
+ *
+ * @param language - Language used for the city labels.
+ * @returns A leg from Rome to Florence.
+ */
+function createSeedLeg(language: Language): LegDraft {
+  // Initializations
+  const labels = SEED_LABELS[language]
+
+  // Return the example leg
+  return {
+    id: SEED_LEG_ID,
+    start: ROME,
+    startLabel: labels.start,
+    end: FLORENCE,
+    endLabel: labels.end,
+    route: null,
+    routeOptions: [],
+    routePreference: null,
+    routeStatus: 'idle',
+    distanceKm: formatDistanceKmForLanguage(
+      haversineKm(ROME, FLORENCE),
+      language,
+    ),
+    fuelConsumption: '6.5',
+    fuelPriceEuros: '1.89',
+    tollsEuros: '15.00',
+    roundTrip: false,
+    passengerIds: ['alice', 'bob'],
+  }
 }
 
 /**
@@ -51,18 +79,20 @@ const SEED_LEG: LegDraft = {
  *
  * @param passengers - Passengers currently declared in the editor.
  * @param legs - Legs currently declared in the editor.
+ * @param t - Translation function for the current language.
  * @returns The calculation result, or the validation message on failure.
  */
 function computeTrip(
   passengers: PassengerDraft[],
   legs: LegDraft[],
+  t: Translate,
 ): { result: TripResult | null; error: string | null } {
   try {
     return { result: calculateTrip(buildTrip(passengers, legs)), error: null }
   } catch (error) {
     return {
       result: null,
-      error: error instanceof Error ? error.message : 'The trip is not valid.',
+      error: translateTripError(error, t),
     }
   }
 }
@@ -74,9 +104,12 @@ function computeTrip(
  */
 export default function App() {
   // Initializations
+  const { language, setLanguage, t, formatDistanceKm } = useI18n()
   const [passengers, setPassengers] =
     useState<PassengerDraft[]>(SEED_PASSENGERS)
-  const [legs, setLegs] = useState<LegDraft[]>([SEED_LEG])
+  const [legs, setLegs] = useState<LegDraft[]>(() => [
+    createSeedLeg(language),
+  ])
   const routeRequestIds = useRef(new Map<string, number>())
   const hasRoutedSeed = useRef(false)
 
@@ -86,10 +119,26 @@ export default function App() {
       return
     }
     hasRoutedSeed.current = true
-    void requestRoute(SEED_LEG.id, ROME, FLORENCE)
+    void requestRoute(SEED_LEG_ID, ROME, FLORENCE)
   }, [])
 
-  const calculation = computeTrip(passengers, legs)
+  // Re-localize the example leg when the language changes
+  useEffect(() => {
+    setLegs((currentLegs) =>
+      currentLegs.map((leg) => {
+        const isSeedRoute =
+          leg.id === SEED_LEG_ID && leg.start === ROME && leg.end === FLORENCE
+        if (!isSeedRoute) {
+          return leg
+        }
+
+        const labels = SEED_LABELS[language]
+        return { ...leg, startLabel: labels.start, endLabel: labels.end }
+      }),
+    )
+  }, [language])
+
+  const calculation = computeTrip(passengers, legs, t)
 
   /**
    * Fetch the road routes for a leg and store the geometry and options.
@@ -388,13 +437,30 @@ export default function App() {
 
   return (
     <div className="flex h-dvh flex-col bg-muted/40 max-md:h-auto max-md:min-h-dvh">
-      <header className="flex items-center gap-3 border-b bg-background px-5 py-4">
+      <header className="flex items-center justify-between gap-3 border-b bg-background px-5 py-4">
         <div className="flex flex-col">
           <h1 className="text-xl font-semibold tracking-tight">Backseat</h1>
-          <p className="text-sm text-muted-foreground">
-            Split fuel and tolls, leg by leg.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('app.tagline')}</p>
         </div>
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          size="sm"
+          value={language}
+          onValueChange={(value) => {
+            if (value === 'it' || value === 'en') {
+              setLanguage(value)
+            }
+          }}
+          aria-label={t('language.label')}
+        >
+          <ToggleGroupItem value="it" aria-label={t('language.italian')}>
+            IT
+          </ToggleGroupItem>
+          <ToggleGroupItem value="en" aria-label={t('language.english')}>
+            EN
+          </ToggleGroupItem>
+        </ToggleGroup>
       </header>
 
       <main className="grid min-h-0 flex-1 grid-cols-[minmax(360px,430px)_1fr] max-md:grid-cols-1">
@@ -408,7 +474,7 @@ export default function App() {
           <section className="flex flex-col gap-3" aria-labelledby="legs-title">
             <div className="flex items-center justify-between gap-2">
               <h2 id="legs-title" className="text-base font-semibold">
-                Legs
+                {t('legs.title')}
               </h2>
               <div className="flex items-center gap-2">
                 {legs.length > 0 && (
@@ -419,7 +485,7 @@ export default function App() {
                     onClick={handleClearLegs}
                   >
                     <Trash2 />
-                    Clear
+                    {t('legs.clear')}
                   </Button>
                 )}
                 <Button
@@ -429,20 +495,20 @@ export default function App() {
                   disabled={passengers.length === 0}
                 >
                   <Plus />
-                  Add leg
+                  {t('legs.add')}
                 </Button>
               </div>
             </div>
 
             {passengers.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Add a passenger before adding a leg.
+                {t('legs.needPassenger')}
               </p>
             )}
 
             {legs.length === 0 ? (
               <p className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
-                No legs yet. Add one, then search for its start and end cities.
+                {t('legs.empty')}
               </p>
             ) : (
               <div className="flex flex-col gap-3">

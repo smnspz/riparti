@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useI18n } from '@/i18n'
 import { searchCities, type Place } from '@/lib/geocoding'
 import type { LatLng } from '@/lib/geo'
 import { cn } from '@/lib/utils'
@@ -57,6 +58,7 @@ export function PlaceSearch({
   onSelect,
 }: PlaceSearchProps) {
   // Initializations
+  const { language, t } = useI18n()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Place[]>([])
@@ -85,7 +87,10 @@ export function PlaceSearch({
     const controller = new AbortController()
     const timer = window.setTimeout(() => {
       setStatus('loading')
-      searchCities(trimmedQuery, controller.signal)
+      searchCities(trimmedQuery, {
+        signal: controller.signal,
+        language,
+      })
         .then((places) => {
           setResults(places)
           setStatus('idle')
@@ -103,7 +108,7 @@ export function PlaceSearch({
       window.clearTimeout(timer)
       controller.abort()
     }
-  }, [open, query])
+  }, [open, query, language])
 
   /**
    * Store the chosen place and close the popover.
@@ -146,7 +151,7 @@ export function PlaceSearch({
         <Command shouldFilter={false}>
           <CommandInput
             autoFocus
-            placeholder="Search a city…"
+            placeholder={t('place.searchPlaceholder')}
             value={query}
             onValueChange={setQuery}
           />
@@ -155,7 +160,7 @@ export function PlaceSearch({
               <div
                 className="flex flex-col gap-1 p-2"
                 role="status"
-                aria-label="Searching cities"
+                aria-label={t('place.searching')}
               >
                 {[0, 1, 2].map((row) => (
                   <div key={row} className="flex flex-col gap-1 px-2 py-1.5">
@@ -166,13 +171,13 @@ export function PlaceSearch({
               </div>
             )}
             {status === 'error' && (
-              <CommandEmpty>City search unavailable.</CommandEmpty>
+              <CommandEmpty>{t('place.unavailable')}</CommandEmpty>
             )}
             {status === 'idle' && results.length === 0 && (
               <CommandEmpty>
                 {query.trim().length < MIN_QUERY_LENGTH
-                  ? 'Type at least two characters.'
-                  : 'No cities found.'}
+                  ? t('place.typeMore')
+                  : t('place.noResults')}
               </CommandEmpty>
             )}
             <CommandGroup>

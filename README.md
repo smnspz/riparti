@@ -35,6 +35,10 @@ immediately visible.
 - The result card updates live with the trip total, each passenger's share, and
   the per-leg fuel/litre/toll breakdown.
 
+The interface is available in Italian (the default) and English. Use the
+**IT / EN** switch in the header; the choice is saved in the browser. Currency,
+distances, and city search results follow the selected language.
+
 Map tiles come from OpenStreetMap, city search from Photon, and routing from the
 public Valhalla demo server; all three need network access and none needs an API
 key. If routing is unavailable, the app falls back to a straight line, shows a
