@@ -1,0 +1,31 @@
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: var(--muted);
+  font-family: inherit;
+}
+
+.route-marker {
+  border: 0;
+  background: transparent;
+}
+
+.route-marker__badge {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #ffffff;
+  border-radius: 9999px;
+  background: var(--marker-color);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 35%);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.route-marker__badge--end {
+  border-color: var(--marker-color);
+  background: #ffffff;
+  color: var(--marker-color);
+}
