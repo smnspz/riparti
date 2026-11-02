@@ -61,7 +61,7 @@ function createSeedLeg(language: Language): LegDraft {
     route: null,
     routeOptions: [],
     routePreference: null,
-    routeStatus: 'idle',
+    routeStatus: 'loading',
     distanceKm: formatDistanceKmForLanguage(
       haversineKm(ROME, FLORENCE),
       language,
@@ -144,7 +144,7 @@ export default function App() {
    * Fetch the road routes for a leg and store the geometry and options.
    *
    * Only the latest request for a leg is applied, so quickly changing the
-   * searched cities cannot leave an older route on screen.
+   * searched places cannot leave an older route on screen.
    *
    * @param legId - Identifier of the leg to route.
    * @param start - Start point used for the request.
@@ -324,7 +324,7 @@ export default function App() {
   }
 
   /**
-   * Set one endpoint of a leg from a city search.
+   * Set one endpoint of a leg from a place search.
    *
    * Updates the displayed distance immediately, clears the old geometry, and
    * requests the road route when the other endpoint is already known.
@@ -379,12 +379,12 @@ export default function App() {
   }
 
   /**
-   * Set an endpoint from a city chosen in the search field.
+   * Set an endpoint from a place chosen in the search field.
    *
    * @param legId - Identifier of the leg to update.
    * @param field - Whether the start or the end changes.
-   * @param point - Coordinates of the chosen city.
-   * @param label - Display label of the chosen city.
+   * @param point - Coordinates of the chosen place.
+   * @param label - Display label of the chosen place.
    * @returns Nothing. Updates the editor state.
    */
   function handleSelectPlace(
@@ -439,7 +439,7 @@ export default function App() {
     <div className="flex h-dvh flex-col bg-muted/40 max-md:h-auto max-md:min-h-dvh">
       <header className="flex items-center justify-between gap-3 border-b bg-background px-5 py-4">
         <div className="flex flex-col">
-          <h1 className="text-xl font-semibold tracking-tight">Backseat</h1>
+          <h1 className="font-heading text-xl font-semibold tracking-tight">Backseat</h1>
           <p className="text-sm text-muted-foreground">{t('app.tagline')}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -457,7 +457,7 @@ export default function App() {
 
           <section className="flex flex-col gap-3" aria-labelledby="legs-title">
             <div className="flex items-center justify-between gap-2">
-              <h2 id="legs-title" className="text-base font-semibold">
+              <h2 id="legs-title" className="font-heading text-base font-semibold">
                 {t('legs.title')}
               </h2>
               <div className="flex items-center gap-2">

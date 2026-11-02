@@ -43,16 +43,16 @@ export const it = {
   'legs.needPassenger':
     'Aggiungi un passeggero prima di aggiungere una tratta.',
   'legs.empty':
-    'Nessuna tratta. Aggiungine una, poi cerca le città di partenza e arrivo.',
+    'Nessuna tratta. Aggiungine una, poi cerca partenza e arrivo.',
 
   'leg.title': 'Tratta {n}',
   'leg.remove': 'Rimuovi tratta {n}',
   'leg.from': 'Da',
   'leg.to': 'A',
-  'leg.startLabel': 'Città di partenza della tratta {n}',
-  'leg.endLabel': 'Città di arrivo della tratta {n}',
-  'leg.searchStart': 'Cerca città di partenza',
-  'leg.searchEnd': 'Cerca città di arrivo',
+  'leg.startLabel': 'Partenza della tratta {n}',
+  'leg.endLabel': 'Arrivo della tratta {n}',
+  'leg.searchStart': 'Cerca indirizzo o città',
+  'leg.searchEnd': 'Cerca indirizzo o città',
   'leg.route': 'Percorso',
   'leg.fastest': 'Più veloce',
   'leg.avoidTolls': 'Evita pedaggi',
@@ -73,11 +73,11 @@ export const it = {
   'leg.passengersOnLeg': 'Passeggeri sulla tratta {n}',
   'leg.addPassengerFirst': 'Aggiungi prima un passeggero.',
 
-  'place.searchPlaceholder': 'Cerca una città…',
-  'place.searching': 'Ricerca città in corso',
-  'place.unavailable': 'Ricerca città non disponibile.',
+  'place.searchPlaceholder': 'Cerca un indirizzo o una città…',
+  'place.searching': 'Ricerca in corso',
+  'place.unavailable': 'Ricerca non disponibile.',
   'place.typeMore': 'Digita almeno due caratteri.',
-  'place.noResults': 'Nessuna città trovata.',
+  'place.noResults': 'Nessun risultato trovato.',
 
   'results.title': 'Risultato',
   'results.empty': 'Aggiungi una tratta per vedere la divisione.',
@@ -89,8 +89,9 @@ export const it = {
   'results.legTotal': 'Totale {total} · {shares}',
 
   'map.legTooltip': '{name} · {distance} km',
+  'map.findingRoute': 'Calcolo del percorso stradale…',
   'map.emptyHint':
-    'Aggiungi una tratta, poi cerca le città di partenza e arrivo per impostare il percorso.',
+    'Aggiungi una tratta, poi cerca partenza e arrivo per impostare il percorso.',
   'map.attribution': 'Percorsi stradali di Valhalla',
 
   'error.legNeedsPassenger': 'Tratta {n}: serve almeno un passeggero.',
@@ -147,16 +148,16 @@ export const en: Record<TranslationKey, string> = {
   'legs.add': 'Add leg',
   'legs.needPassenger': 'Add a passenger before adding a leg.',
   'legs.empty':
-    'No legs yet. Add one, then search for its start and end cities.',
+    'No legs yet. Add one, then search for its start and end.',
 
   'leg.title': 'Leg {n}',
   'leg.remove': 'Remove leg {n}',
   'leg.from': 'From',
   'leg.to': 'To',
-  'leg.startLabel': 'Start city of leg {n}',
-  'leg.endLabel': 'End city of leg {n}',
-  'leg.searchStart': 'Search start city',
-  'leg.searchEnd': 'Search end city',
+  'leg.startLabel': 'Start of leg {n}',
+  'leg.endLabel': 'End of leg {n}',
+  'leg.searchStart': 'Search address or city',
+  'leg.searchEnd': 'Search address or city',
   'leg.route': 'Route',
   'leg.fastest': 'Fastest',
   'leg.avoidTolls': 'Avoid tolls',
@@ -177,11 +178,11 @@ export const en: Record<TranslationKey, string> = {
   'leg.passengersOnLeg': 'Passengers on leg {n}',
   'leg.addPassengerFirst': 'Add a passenger first.',
 
-  'place.searchPlaceholder': 'Search a city…',
-  'place.searching': 'Searching cities',
-  'place.unavailable': 'City search unavailable.',
+  'place.searchPlaceholder': 'Search an address or city…',
+  'place.searching': 'Searching',
+  'place.unavailable': 'Search unavailable.',
   'place.typeMore': 'Type at least two characters.',
-  'place.noResults': 'No cities found.',
+  'place.noResults': 'No results found.',
 
   'results.title': 'Result',
   'results.empty': 'Add a leg to see the split.',
@@ -192,8 +193,9 @@ export const en: Record<TranslationKey, string> = {
   'results.legTotal': 'Total {total} · {shares}',
 
   'map.legTooltip': '{name} · {distance} km',
+  'map.findingRoute': 'Finding the road route…',
   'map.emptyHint':
-    'Add a leg, then search its start and end cities to set its route.',
+    'Add a leg, then search its start and end to set its route.',
   'map.attribution': 'Road routes by Valhalla',
 
   'error.legNeedsPassenger': 'Leg {n}: at least one passenger is required.',

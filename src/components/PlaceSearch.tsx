@@ -12,7 +12,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useI18n } from '@/i18n'
-import { searchCities, type Place } from '@/lib/geocoding'
+import { searchPlaces, type Place } from '@/lib/geocoding'
 import type { LatLng } from '@/lib/geo'
 import { cn } from '@/lib/utils'
 
@@ -23,9 +23,9 @@ interface PlaceSearchProps {
   label: string
   /** Text shown when no place is selected. */
   placeholder: string
-  /** City name of the selected place, or an empty string. */
+  /** Display name of the selected place, or an empty string. */
   value: string
-  /** Called with the chosen point and its city name. */
+  /** Called with the chosen point and its selection label. */
   onSelect: (point: LatLng, name: string) => void
 }
 
@@ -38,7 +38,7 @@ const SEARCH_DELAY_MS = 300
 type SearchStatus = 'idle' | 'loading' | 'error'
 
 /**
- * City search control with a Google Maps-style command popover.
+ * Place search control with a Google Maps-style command popover.
  *
  * The popover opens with an empty, focused search field. Results are debounced
  * and superseded requests are aborted.
@@ -46,9 +46,9 @@ type SearchStatus = 'idle' | 'loading' | 'error'
  * @param id - Identifier of the trigger button, for the associated label.
  * @param label - Accessible label for the search control.
  * @param placeholder - Text shown when no place is selected.
- * @param value - City name of the selected place, or an empty string.
- * @param onSelect - Called with the chosen point and its city name.
- * @returns The city search combobox.
+ * @param value - Display name of the selected place, or an empty string.
+ * @param onSelect - Called with the chosen point and its selection label.
+ * @returns The place search combobox.
  */
 export function PlaceSearch({
   id,
@@ -87,7 +87,7 @@ export function PlaceSearch({
     const controller = new AbortController()
     const timer = window.setTimeout(() => {
       setStatus('loading')
-      searchCities(trimmedQuery, {
+      searchPlaces(trimmedQuery, {
         signal: controller.signal,
         language,
       })
@@ -118,7 +118,7 @@ export function PlaceSearch({
    */
   function selectPlace(place: Place): void {
     setOpen(false)
-    onSelect(place.point, place.name)
+    onSelect(place.point, place.selectionLabel)
   }
 
   return (

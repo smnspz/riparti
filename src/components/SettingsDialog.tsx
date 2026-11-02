@@ -94,8 +94,8 @@ export function SettingsDialog() {
           </Button>
         </DialogClose>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-xs font-medium text-muted-foreground">
+        <fieldset className="flex flex-col">
+          <legend className="mb-1.5 text-xs font-medium text-muted-foreground">
             {t('settings.language')}
           </legend>
           <ToggleGroup
@@ -120,8 +120,8 @@ export function SettingsDialog() {
           </ToggleGroup>
         </fieldset>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-xs font-medium text-muted-foreground">
+        <fieldset className="flex flex-col">
+          <legend className="mb-1.5 text-xs font-medium text-muted-foreground">
             {t('settings.theme')}
           </legend>
           <RadioGroup

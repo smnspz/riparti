@@ -13,7 +13,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useI18n } from '@/i18n'
@@ -34,7 +33,7 @@ interface LegEditorProps {
   onChange: (legId: string, patch: Partial<LegDraft>) => void
   /** Remove the leg from the trip. */
   onRemove: (legId: string) => void
-  /** Set an endpoint from a city chosen in the search field. */
+  /** Set an endpoint from a place chosen in the search field. */
   onSelectPlace: (
     legId: string,
     field: 'start' | 'end',
@@ -48,14 +47,14 @@ interface LegEditorProps {
 }
 
 /**
- * Card for a single leg, including its cities, route choice, and passengers.
+ * Card for a single leg, including its endpoints, route choice, and passengers.
  *
  * @param leg - Leg being edited.
  * @param index - Zero-based position of the leg in the trip.
  * @param passengers - Passengers that can be selected for the leg.
  * @param onChange - Applies a partial update to the leg.
  * @param onRemove - Removes the leg from the trip.
- * @param onSelectPlace - Sets an endpoint from a chosen city.
+ * @param onSelectPlace - Sets an endpoint from a chosen place.
  * @param onSelectRoute - Shows one of the computed route options.
  * @param onChangePassengers - Replaces the passengers present on the leg.
  * @returns The leg editor card.
@@ -138,8 +137,8 @@ export function LegEditor({
         </div>
 
         {leg.routeOptions.length > 1 && (
-          <fieldset className="flex animate-in flex-col gap-2 duration-200 fade-in-0 slide-in-from-top-1 motion-reduce:animate-none">
-            <legend className="text-xs font-medium text-muted-foreground">
+          <fieldset className="flex animate-in flex-col duration-200 fade-in-0 slide-in-from-top-1 motion-reduce:animate-none">
+            <legend className="mb-1.5 text-xs font-medium text-muted-foreground">
               {t('leg.route')}
             </legend>
             <RadioGroup
@@ -310,10 +309,8 @@ export function LegEditor({
           </Label>
         </div>
 
-        <Separator />
-
-        <fieldset className="flex flex-col gap-2.5">
-          <legend className="text-xs font-medium text-muted-foreground">
+        <fieldset className="flex flex-col">
+          <legend className="mb-1.5 text-xs font-medium text-muted-foreground">
             {t('leg.passengers')}
           </legend>
           {passengers.length === 0 ? (

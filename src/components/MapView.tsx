@@ -1,9 +1,9 @@
 import { Fragment, useEffect } from 'react'
 import L from 'leaflet'
+import { LoaderCircle } from 'lucide-react'
 import {
   MapContainer,
   Marker,
-  Polyline,
   TileLayer,
   Tooltip,
   useMap,
@@ -13,6 +13,7 @@ import { useI18n } from '@/i18n'
 import { formatLegName } from '@/lib/format'
 import { haversineKm, type LatLng } from '@/lib/geo'
 import type { LegDraft } from '@/types'
+import { AnimatedPolyline } from '@/components/AnimatedPolyline'
 
 /** Centre used before the first route is selected. */
 const DEFAULT_CENTER: [number, number] = [42.5, 12.5]
@@ -47,8 +48,10 @@ interface RouteLayer {
   start: LatLng
   /** End point of the route. */
   end: LatLng
-  /** Polyline positions, following the road when a route is available. */
-  positions: Array<[number, number]>
+  /** Polyline positions, or null while the road route is loading. */
+  positions: Array<[number, number]> | null
+  /** Stable key of the drawn geometry, used to restart the draw-in. */
+  geometryKey: string
   /** Colour assigned to the leg. */
   color: string
 }
@@ -66,25 +69,47 @@ function collectRoutes(legs: LegDraft[]): RouteLayer[] {
   // Keep only legs with both endpoints
   legs.forEach((leg, index) => {
     if (leg.start !== null && leg.end !== null) {
+      // Draw a straight line only as the error fallback; while the road route
+      // is loading the map shows the markers and a loading hint instead
+      const isRouting = leg.routeStatus === 'loading'
       const geometry =
         leg.route !== null && leg.route.length > 1
           ? leg.route
-          : [leg.start, leg.end]
+          : isRouting
+            ? null
+            : [leg.start, leg.end]
 
       routes.push({
         leg,
         index,
         start: leg.start,
         end: leg.end,
-        positions: geometry.map(
-          (point) => [point.lat, point.lng] as [number, number],
-        ),
+        positions:
+          geometry === null
+            ? null
+            : geometry.map(
+                (point) => [point.lat, point.lng] as [number, number],
+              ),
+        geometryKey: geometry === null ? '' : buildGeometryKey(geometry),
         color: ROUTE_COLORS[index % ROUTE_COLORS.length] ?? FALLBACK_COLOR,
       })
     }
   })
 
   return routes
+}
+
+/**
+ * Build a stable key for a geometry, so its draw-in restarts only when the
+ * drawn line actually changes.
+ *
+ * @param points - Points of the drawn geometry.
+ * @returns A key describing the point count and both endpoints.
+ */
+function buildGeometryKey(points: LatLng[]): string {
+  const first = points[0]
+  const last = points.at(-1)
+  return `${points.length}:${first?.lat},${first?.lng}:${last?.lat},${last?.lng}`
 }
 
 /**
@@ -160,6 +185,7 @@ export function MapView({ legs }: MapViewProps) {
     )
     .join('|')
   const showEmptyHint = routes.length === 0
+  const isRouting = legs.some((leg) => leg.routeStatus === 'loading')
 
   return (
     <div className="absolute inset-0">
@@ -176,30 +202,34 @@ export function MapView({ legs }: MapViewProps) {
 
         {routes.map((route) => (
           <Fragment key={route.leg.id}>
-            <Polyline
-              positions={route.positions}
-              pathOptions={{
-                color: route.color,
-                weight: 5,
-                opacity: 0.85,
-                dashArray: route.leg.roundTrip ? '10 8' : undefined,
-              }}
-            >
-              <Tooltip sticky>
-                {t('map.legTooltip', {
-                  name: formatLegName(
-                    route.leg,
-                    t('leg.title', { n: route.index + 1 }),
-                  ),
-                  distance:
-                    route.leg.distanceKm.trim() === ''
-                      ? formatDistanceKm(
-                          haversineKm(route.start, route.end),
-                        )
-                      : route.leg.distanceKm,
-                })}
-              </Tooltip>
-            </Polyline>
+            {route.positions !== null && (
+              <AnimatedPolyline
+                positions={route.positions}
+                geometryKey={route.geometryKey}
+                animate={route.leg.route !== null}
+                pathOptions={{
+                  color: route.color,
+                  weight: 5,
+                  opacity: 0.85,
+                  dashArray: route.leg.roundTrip ? '10 8' : undefined,
+                }}
+              >
+                <Tooltip sticky>
+                  {t('map.legTooltip', {
+                    name: formatLegName(
+                      route.leg,
+                      t('leg.title', { n: route.index + 1 }),
+                    ),
+                    distance:
+                      route.leg.distanceKm.trim() === ''
+                        ? formatDistanceKm(
+                            haversineKm(route.start, route.end),
+                          )
+                        : route.leg.distanceKm,
+                  })}
+                </Tooltip>
+              </AnimatedPolyline>
+            )}
             <Marker
               position={[route.start.lat, route.start.lng]}
               icon={buildMarkerIcon(String(route.index + 1), route.color, 'start')}
@@ -213,6 +243,19 @@ export function MapView({ legs }: MapViewProps) {
 
         <FitRoute points={points} pointsKey={pointsKey} />
       </MapContainer>
+
+      {isRouting && (
+        <div
+          role="status"
+          className="absolute top-3 left-1/2 z-[1000] flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
+        >
+          <LoaderCircle
+            aria-hidden
+            className="size-3.5 animate-spin motion-reduce:animate-none"
+          />
+          {t('map.findingRoute')}
+        </div>
+      )}
 
       {showEmptyHint && (
         <div

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { searchCities } from './geocoding'
+import { searchPlaces } from './geocoding'
 
 /**
  * Build a JSON response for the mocked fetch.
@@ -38,18 +38,36 @@ const PHOTON_PAYLOAD = {
   ],
 }
 
+/** Photon payload for an unnamed house number. */
+const ADDRESS_PAYLOAD = {
+  features: [
+    {
+      geometry: { coordinates: [12.4770387, 41.9092679] },
+      properties: {
+        osm_type: 'N',
+        osm_id: 12046628552,
+        street: 'Via del Corso',
+        housenumber: '12',
+        city: 'Roma',
+        state: 'Lazio',
+        country: 'Italia',
+      },
+    },
+  ],
+}
+
 afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('searchCities', () => {
-  it('returns city labels and coordinates', async () => {
+describe('searchPlaces', () => {
+  it('returns place labels and coordinates', async () => {
     // Initializations
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(PHOTON_PAYLOAD))
     vi.stubGlobal('fetch', fetchMock)
 
     // Search for the city
-    const places = await searchCities('Florence')
+    const places = await searchPlaces('Florence')
 
     // Check the converted place
     expect(places).toEqual([
@@ -57,45 +75,81 @@ describe('searchCities', () => {
         id: 'R-42602',
         name: 'Florence',
         detail: 'Tuscany, Italy',
-        label: 'Florence, Tuscany, Italy',
+        selectionLabel: 'Florence',
         point: { lat: 43.7697955, lng: 11.2556404 },
       },
     ])
   })
 
-  it('requests city-level results and encodes the query', async () => {
+  it('builds street addresses from unnamed buildings', async () => {
+    // Initializations
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(ADDRESS_PAYLOAD))
+    vi.stubGlobal('fetch', fetchMock)
+
+    // Search for a house number
+    const places = await searchPlaces('Via del Corso 12')
+
+    // Check the street address and its city detail
+    expect(places).toEqual([
+      {
+        id: 'N-12046628552',
+        name: 'Via del Corso 12',
+        detail: 'Roma, Lazio, Italia',
+        selectionLabel: 'Via del Corso 12, Roma',
+        point: { lat: 41.9092679, lng: 12.4770387 },
+      },
+    ])
+  })
+
+  it('requests addresses, streets, and cities and encodes the query', async () => {
     // Initializations
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(PHOTON_PAYLOAD))
     vi.stubGlobal('fetch', fetchMock)
 
     // Search for a multi-word city
-    await searchCities('San Gimignano')
+    await searchPlaces('San Gimignano')
 
     // Check the request URL
     const requestUrl = String(fetchMock.mock.calls[0]?.[0])
     expect(requestUrl).toContain('San+Gimignano')
+    expect(requestUrl).toContain('layer=house')
+    expect(requestUrl).toContain('layer=street')
     expect(requestUrl).toContain('layer=city')
     expect(requestUrl).toContain('limit=6')
   })
 
-  it('requests results in the requested language', async () => {
+  it('translates names only into languages Photon supports', async () => {
     // Initializations
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(PHOTON_PAYLOAD))
     vi.stubGlobal('fetch', fetchMock)
 
-    // Search with an explicit language
-    await searchCities('Florence', { language: 'it' })
+    // Search in Italian, which Photon cannot translate into
+    await searchPlaces('Firenze', { language: 'it' })
 
-    // Check the request URL
+    // Check that the request asks for local names instead
     const requestUrl = String(fetchMock.mock.calls[0]?.[0])
-    expect(requestUrl).toContain('lang=it')
+    expect(requestUrl).toContain('lang=default')
+    expect(requestUrl).not.toContain('lang=it')
+  })
+
+  it('requests translated names for supported languages', async () => {
+    // Initializations
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(PHOTON_PAYLOAD))
+    vi.stubGlobal('fetch', fetchMock)
+
+    // Search in English, which Photon supports
+    await searchPlaces('Florence', { language: 'en' })
+
+    // Check the language parameter
+    const requestUrl = String(fetchMock.mock.calls[0]?.[0])
+    expect(requestUrl).toContain('lang=en')
   })
 
   it('returns no results for a blank query without calling the service', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
 
-    await expect(searchCities('   ')).resolves.toEqual([])
+    await expect(searchPlaces('   ')).resolves.toEqual([])
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
@@ -105,6 +159,6 @@ describe('searchCities', () => {
       vi.fn().mockResolvedValue(jsonResponse({ message: 'down' }, 429)),
     )
 
-    await expect(searchCities('Rome')).rejects.toThrow(/HTTP 429/)
+    await expect(searchPlaces('Rome')).rejects.toThrow(/HTTP 429/)
   })
 })
