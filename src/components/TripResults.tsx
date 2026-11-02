@@ -1,5 +1,5 @@
 import { CircleAlert } from 'lucide-react'
-import type { TripResult } from '@/backseat'
+import type { TripResult } from '@/core'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Card,

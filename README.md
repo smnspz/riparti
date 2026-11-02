@@ -7,7 +7,7 @@ The project has two parts:
 - an interactive React app with an OpenStreetMap map, where you add passengers
   and legs, search cities, and choose between fastest and toll-free routes. The
   UI is built with shadcn/ui components on Tailwind CSS;
-- a dependency-free calculation module in `src/backseat/` that works in integer
+- a dependency-free calculation module in `src/core/` that works in integer
   euro cents so the shares always add up to the trip total exactly.
 
 ## Web app
@@ -55,8 +55,8 @@ instances.
 ## Usage
 
 ```ts
-import { calculateTrip } from './src/backseat'
-import type { Trip } from './src/backseat'
+import { calculateTrip } from './src/core'
+import type { Trip } from './src/core'
 
 const trip: Trip = {
   passengers: [

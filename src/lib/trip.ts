@@ -1,4 +1,4 @@
-import type { Trip } from '../backseat'
+import type { Trip } from '../core'
 import type { LegDraft, PassengerDraft } from '../types'
 
 /**
