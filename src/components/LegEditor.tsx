@@ -1,7 +1,6 @@
 import { TriangleAlert, Trash2 } from 'lucide-react'
 import { PlaceSearch } from '@/components/PlaceSearch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -71,8 +70,6 @@ export function LegEditor({
   onChangePassengers,
 }: LegEditorProps) {
   // Initializations
-  const distanceLabel =
-    leg.distanceKm.trim() === '' ? 'No route' : `${leg.distanceKm} km`
   const hasTollFreeOption = leg.routeOptions.some(
     (option) => option.preference === 'no-tolls',
   )
@@ -86,10 +83,7 @@ export function LegEditor({
         <CardTitle className="text-sm font-semibold">
           Leg {index + 1}
         </CardTitle>
-        <CardAction className="flex items-center gap-1">
-          <Badge variant="outline" className="tabular-nums">
-            {distanceLabel}
-          </Badge>
+        <CardAction>
           <Button
             type="button"
             variant="ghost"
