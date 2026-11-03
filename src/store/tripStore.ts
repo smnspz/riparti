@@ -90,6 +90,12 @@ export interface TripStore extends TripSnapshot {
   localizeSeed: (language: Language) => void
   /** Request the road route for the example leg, if it still needs one. */
   routeSeedLeg: (formatDistanceKm: (km: number) => string) => void
+  /** Request the road route for one leg again. */
+  retryRoute: (legId: string, formatDistanceKm: (km: number) => string) => void
+  /** Request the road route for every leg drawn as a straight line. */
+  retryFallbackRoutes: (
+    formatDistanceKm: (km: number) => string,
+  ) => void
   /** Restore the state before the last recorded edit. */
   undo: () => void
   /** Reapply the last undone edit. */
@@ -468,6 +474,22 @@ export const useTripStore = create<TripStore>()(
             return
           }
           void loadRoutes(leg.id, leg.start, leg.end, formatDistanceKm)
+        },
+
+        retryRoute: (legId, formatDistanceKm) => {
+          const leg = get().legs.find((candidate) => candidate.id === legId)
+          if (leg === undefined || leg.start === null || leg.end === null) {
+            return
+          }
+          void loadRoutes(leg.id, leg.start, leg.end, formatDistanceKm)
+        },
+
+        retryFallbackRoutes: (formatDistanceKm) => {
+          for (const leg of get().legs) {
+            if (leg.start !== null && leg.end !== null && leg.route === null) {
+              void loadRoutes(leg.id, leg.start, leg.end, formatDistanceKm)
+            }
+          }
         },
 
         undo: () =>

@@ -97,7 +97,7 @@ export function PassengerList() {
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  className="size-4 rounded-sm text-muted-foreground hover:text-foreground"
+                  className="size-4 rounded-sm text-muted-foreground hover:text-foreground pointer-coarse:size-6"
                   onClick={() => removePassenger(passenger.id)}
                   aria-label={t('passengers.remove', {
                     name: passenger.name,
@@ -110,8 +110,9 @@ export function PassengerList() {
           </div>
         )}
 
-        <form className="flex gap-2" onSubmit={handleSubmit}>
+        <form className="flex flex-wrap gap-2" onSubmit={handleSubmit}>
           <Input
+            className="min-w-40 flex-1"
             aria-label={t('passengers.nameLabel')}
             placeholder={t('passengers.addPlaceholder')}
             value={name}

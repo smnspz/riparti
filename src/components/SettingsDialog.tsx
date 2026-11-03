@@ -81,6 +81,7 @@ export function SettingsDialog() {
           type="button"
           variant="outline"
           size="icon-sm"
+          className="pointer-coarse:size-11"
           aria-label={t('settings.open')}
           title={t('settings.open')}
         >
@@ -89,7 +90,7 @@ export function SettingsDialog() {
       </DialogTrigger>
 
       <DialogContent
-        className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md"
+        className="max-h-[calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-y-auto sm:max-w-md"
         showCloseButton={false}
       >
         <DialogHeader>
@@ -102,7 +103,7 @@ export function SettingsDialog() {
             type="button"
             variant="ghost"
             size="icon-sm"
-            className="absolute top-2 right-2"
+            className="absolute top-2 right-2 pointer-coarse:size-11"
             aria-label={t('settings.close')}
           >
             <X />

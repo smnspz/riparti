@@ -1,4 +1,5 @@
-import { TriangleAlert, Trash2 } from 'lucide-react'
+import type { CSSProperties } from 'react'
+import { RotateCcw, TriangleAlert, Trash2 } from 'lucide-react'
 import { PlaceSearch } from '@/components/PlaceSearch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useI18n } from '@/i18n'
 import { formatLegName } from '@/lib/format'
+import { routeColor } from '@/lib/routeColors'
 import { cn } from '@/lib/utils'
 import { useTripStore } from '@/store/tripStore'
 import type { LegDraft } from '@/types'
@@ -44,25 +46,45 @@ export function LegEditor({ leg, index }: LegEditorProps) {
   const setEndpoint = useTripStore((state) => state.setEndpoint)
   const selectRoute = useTripStore((state) => state.selectRoute)
   const setLegPassengers = useTripStore((state) => state.setLegPassengers)
+  const retryRoute = useTripStore((state) => state.retryRoute)
   const hasTollFreeOption = leg.routeOptions.some(
     (option) => option.preference === 'no-tolls',
   )
-  const legName = formatLegName(leg, t('leg.title', { n: index + 1 }))
+  const legNumber = t('leg.title', { n: index + 1 })
+  const legName = formatLegName(leg, legNumber)
+  const cardTitle = legName === legNumber ? legName : `${legNumber}: ${legName}`
 
   return (
     <Card
+      id={`leg-card-${leg.id}`}
+      tabIndex={-1}
       size="sm"
-      className="animate-in duration-200 fade-in-0 slide-in-from-top-1 motion-reduce:animate-none"
+      className="animate-in duration-200 fade-in-0 slide-in-from-top-1 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:animate-none"
     >
       <CardHeader>
-        <CardTitle className="truncate text-sm font-semibold" title={legName}>
-          {legName}
+        <CardTitle
+          role="heading"
+          aria-level={3}
+          className="flex min-w-0 items-center gap-2 text-sm font-semibold"
+          aria-label={cardTitle}
+        >
+          <span
+            aria-hidden
+            className="leg-index-badge"
+            style={{ '--marker-color': routeColor(index) } as CSSProperties}
+          >
+            {index + 1}
+          </span>
+          <span className="truncate" title={legName}>
+            {legName}
+          </span>
         </CardTitle>
         <CardAction>
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
+            className="pointer-coarse:size-11"
             onClick={() => removeLeg(leg.id)}
             aria-label={t('leg.remove', { n: index + 1 })}
           >
@@ -186,8 +208,17 @@ export function LegEditor({ leg, index }: LegEditorProps) {
         {leg.routeStatus === 'error' && (
           <Alert variant="destructive" className="py-2">
             <TriangleAlert />
-            <AlertDescription className="text-xs">
+            <AlertDescription className="flex flex-col items-start gap-2 text-xs">
               {t('leg.routeError')}
+              <Button
+                type="button"
+                variant="secondary"
+                size="xs"
+                onClick={() => retryRoute(leg.id, formatDistanceKm)}
+              >
+                <RotateCcw />
+                {t('map.retry')}
+              </Button>
             </AlertDescription>
           </Alert>
         )}

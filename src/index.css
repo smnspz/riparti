@@ -160,3 +160,19 @@
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
+
+/* Touch devices get real 44px targets even when the screen is wide. */
+@media (pointer: coarse) {
+  [data-slot='input'],
+  [data-slot='select-trigger'],
+  [data-slot='select-item'],
+  [data-slot='command-input'],
+  [data-slot='command-item'],
+  [data-slot='toggle-group-item'] {
+    min-height: 2.75rem;
+  }
+
+  [data-slot='button']:not([data-size^='icon']) {
+    min-height: 2.75rem;
+  }
+}

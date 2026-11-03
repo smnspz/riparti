@@ -69,11 +69,12 @@ export function UndoRedo() {
   }, [])
 
   return (
-    <div className="flex items-center gap-0.5 rounded-lg border bg-background/95 p-0.5 shadow-sm">
+    <div className="flex items-center gap-0.5 rounded-lg border bg-background/95 p-0.5 shadow-sm pointer-coarse:gap-1 pointer-coarse:p-1">
       <Button
         type="button"
         variant="ghost"
         size="icon-sm"
+        className="pointer-coarse:size-11"
         onClick={undo}
         disabled={!canUndo}
         aria-label={t('history.undo')}
@@ -85,6 +86,7 @@ export function UndoRedo() {
         type="button"
         variant="ghost"
         size="icon-sm"
+        className="pointer-coarse:size-11"
         onClick={redo}
         disabled={!canRedo}
         aria-label={t('history.redo')}

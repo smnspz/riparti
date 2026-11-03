@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import { Polyline } from 'react-leaflet'
 
@@ -20,8 +20,6 @@ interface AnimatedPolylineProps {
   animate: boolean
   /** Leaflet path options for the line. */
   pathOptions: L.PathOptions
-  /** Tooltip shown while hovering the line. */
-  children?: ReactNode
 }
 
 /**
@@ -35,7 +33,6 @@ interface AnimatedPolylineProps {
  * @param geometryKey - Stable key of the geometry.
  * @param animate - Whether to draw the line in.
  * @param pathOptions - Leaflet path options for the line.
- * @param children - Tooltip shown while hovering the line.
  * @returns The polyline, animated on geometry changes.
  */
 export function AnimatedPolyline({
@@ -43,7 +40,6 @@ export function AnimatedPolyline({
   geometryKey,
   animate,
   pathOptions,
-  children,
 }: AnimatedPolylineProps) {
   // Initializations
   const polylineRef = useRef<L.Polyline>(null)
@@ -119,8 +115,11 @@ export function AnimatedPolyline({
   }, [animate, geometryKey])
 
   return (
-    <Polyline ref={polylineRef} positions={positions} pathOptions={pathOptions}>
-      {children}
-    </Polyline>
+    <Polyline
+      ref={polylineRef}
+      positions={positions}
+      pathOptions={pathOptions}
+      interactive={false}
+    />
   )
 }

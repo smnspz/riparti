@@ -128,11 +128,20 @@ export const it = {
     '{distance} km · {liters} L · carburante {fuel} · pedaggi {tolls}',
   'results.legTotal': 'Totale {total} · {shares}',
 
+  'map.title': 'Mappa del viaggio',
+  'map.markerStart': 'Tratta {n}, partenza: {place}',
+  'map.markerEnd': 'Tratta {n}, arrivo: {place}',
   'map.legTooltip': '{name} · {distance} km',
+  'map.legTooltipRoundTrip': '{name} · {distance} km · andata e ritorno',
   'map.findingRoute': 'Calcolo del percorso stradale…',
   'map.emptyHint':
     'Aggiungi una tratta, poi cerca partenza e arrivo per impostare il percorso.',
   'map.attribution': 'Percorsi stradali di Valhalla',
+  'map.zoomIn': 'Ingrandisci la mappa',
+  'map.zoomOut': 'Riduci la mappa',
+  'map.fallbackLabel': 'Stima in linea retta',
+  'map.routeUnavailable': 'Percorso non disponibile',
+  'map.retry': 'Riprova',
 
   'error.legNeedsPassenger': 'Tratta {n}: serve almeno un passeggero.',
   'error.legUnknownPassenger': 'Tratta {n}: passeggero sconosciuto ({id}).',
@@ -272,11 +281,20 @@ export const en: Record<TranslationKey, string> = {
   'results.legSummary': '{distance} km · {liters} L · fuel {fuel} · tolls {tolls}',
   'results.legTotal': 'Total {total} · {shares}',
 
+  'map.title': 'Trip map',
+  'map.markerStart': 'Leg {n}, start: {place}',
+  'map.markerEnd': 'Leg {n}, end: {place}',
   'map.legTooltip': '{name} · {distance} km',
+  'map.legTooltipRoundTrip': '{name} · {distance} km · round trip',
   'map.findingRoute': 'Finding the road route…',
   'map.emptyHint':
     'Add a leg, then search its start and end to set its route.',
   'map.attribution': 'Road routes by Valhalla',
+  'map.zoomIn': 'Zoom in on the map',
+  'map.zoomOut': 'Zoom out of the map',
+  'map.fallbackLabel': 'Straight-line estimate',
+  'map.routeUnavailable': 'Route unavailable',
+  'map.retry': 'Try again',
 
   'error.legNeedsPassenger': 'Leg {n}: at least one passenger is required.',
   'error.legUnknownPassenger': 'Leg {n}: unknown passenger ({id}).',

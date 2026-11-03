@@ -370,7 +370,7 @@ export function TripResults({ result, error }: TripResultsProps) {
                 </Button>
               </DialogTrigger>
               <DialogContent
-                className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg"
+                className="max-h-[calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-y-auto sm:max-w-lg"
                 showCloseButton={false}
                 onCloseAutoFocus={(event) => {
                   if (!focusPayerOnClose.current) {

@@ -5,9 +5,22 @@
   font-family: inherit;
 }
 
+.leaflet-container:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
 .route-marker {
+  display: grid;
+  place-items: center;
   border: 0;
   background: transparent;
+}
+
+.route-marker:focus-visible {
+  border-radius: 9999px;
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .route-marker__badge {
@@ -30,16 +43,94 @@
   color: var(--marker-color);
 }
 
+.leg-index-badge {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: var(--marker-color);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.route-fallback {
+  pointer-events: none;
+}
+
+.route-fallback__chip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 1px dashed var(--border);
+  border-radius: 9999px;
+  background: var(--background);
+  padding: 0.125rem 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+}
+
 .dark .leaflet-tile-pane {
   filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
 }
 
-.dark .leaflet-control-attribution,
-.dark .leaflet-control-zoom a {
-  background: var(--background);
-  color: var(--foreground);
+/* Keep the map controls clear of notches and rounded corners. */
+.map-top-left {
+  top: max(0.75rem, env(safe-area-inset-top));
+  left: max(0.75rem, env(safe-area-inset-left));
 }
 
-.dark .leaflet-control-attribution a {
-  color: var(--primary);
+.map-top-right {
+  top: max(0.75rem, env(safe-area-inset-top));
+  right: max(0.75rem, env(safe-area-inset-right));
+}
+
+.map-bottom-bar {
+  padding: 0.5rem;
+  padding-right: max(0.5rem, env(safe-area-inset-right));
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  padding-left: max(0.5rem, env(safe-area-inset-left));
+}
+
+.map-status {
+  left: max(0.75rem, env(safe-area-inset-left));
+  right: max(0.75rem, env(safe-area-inset-right));
+}
+
+/* Short landscape screens: put the editor beside the map instead of leaving
+   the map stacked above a form with almost no room left below it. */
+@media (max-width: 1023px) and (orientation: landscape) and (max-height: 500px) {
+  .app-shell {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app-main {
+    grid-template-columns: 1fr minmax(17rem, 20rem);
+  }
+
+  .app-aside {
+    order: 2;
+    overflow-y: auto;
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+
+  .app-map {
+    order: 1;
+    height: auto;
+    border-right: 1px solid var(--border);
+    border-bottom: 0;
+    border-left: 0;
+  }
+
+  /* The editor and the map already share the screen here. */
+  .trip-total-bar {
+    display: none;
+  }
 }
