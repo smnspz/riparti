@@ -247,7 +247,7 @@ export function MapView({ legs }: MapViewProps) {
       {isRouting && (
         <div
           role="status"
-          className="absolute top-3 left-1/2 z-[1000] flex max-w-[calc(100%-6rem)] -translate-x-1/2 items-center gap-2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
+          className="absolute top-3 left-1/2 z-[1000] flex max-w-[calc(100%-10rem)] -translate-x-1/2 items-center gap-2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
         >
           <LoaderCircle
             aria-hidden
@@ -260,7 +260,7 @@ export function MapView({ legs }: MapViewProps) {
       {showEmptyHint && (
         <div
           role="status"
-          className="absolute top-3 left-1/2 z-[1000] max-w-[calc(100%-6rem)] -translate-x-1/2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
+          className="absolute top-3 left-1/2 z-[1000] max-w-[calc(100%-10rem)] -translate-x-1/2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
         >
           {t('map.emptyHint')}
         </div>

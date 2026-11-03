@@ -20,40 +20,21 @@ import {
 } from '@/components/ui/select'
 import { useI18n } from '@/i18n'
 import type { TranslationKey } from '@/i18n'
-import type { PassengerDraft } from '@/types'
-
-interface PassengerListProps {
-  /** Passengers currently declared on the trip. */
-  passengers: PassengerDraft[]
-  /** Id of the passenger who paid the trip, if chosen. */
-  paidById: string | null
-  /** Add a passenger with an already trimmed, unique name. */
-  onAdd: (name: string) => void
-  /** Remove a passenger and their membership from every leg. */
-  onRemove: (passengerId: string) => void
-  /** Update the passenger who paid the trip. */
-  onPaidByChange: (passengerId: string | null) => void
-}
+import { useTripStore } from '@/store/tripStore'
 
 /**
  * Card listing the trip passengers with an inline add form.
  *
- * @param passengers - Passengers currently declared on the trip.
- * @param paidById - Id of the passenger who paid, or null.
- * @param onAdd - Called with a valid, unique passenger name.
- * @param onRemove - Called with the id of the passenger to remove.
- * @param onPaidByChange - Updates the passenger who paid the trip.
  * @returns The passenger management card.
  */
-export function PassengerList({
-  passengers,
-  paidById,
-  onAdd,
-  onRemove,
-  onPaidByChange,
-}: PassengerListProps) {
+export function PassengerList() {
   // Initializations
   const { t } = useI18n()
+  const passengers = useTripStore((state) => state.passengers)
+  const paidById = useTripStore((state) => state.paidById)
+  const addPassenger = useTripStore((state) => state.addPassenger)
+  const removePassenger = useTripStore((state) => state.removePassenger)
+  const setPaidBy = useTripStore((state) => state.setPaidBy)
   const [name, setName] = useState('')
   const [error, setError] = useState<TranslationKey | null>(null)
 
@@ -82,7 +63,7 @@ export function PassengerList({
     }
 
     // Add the passenger and reset the form
-    onAdd(trimmedName)
+    addPassenger(trimmedName)
     setName('')
     setError(null)
   }
@@ -117,7 +98,7 @@ export function PassengerList({
                   variant="ghost"
                   size="icon-xs"
                   className="size-4 rounded-sm text-muted-foreground hover:text-foreground"
-                  onClick={() => onRemove(passenger.id)}
+                  onClick={() => removePassenger(passenger.id)}
                   aria-label={t('passengers.remove', {
                     name: passenger.name,
                   })}
@@ -162,7 +143,7 @@ export function PassengerList({
             <Select
               value={paidById ?? 'none'}
               onValueChange={(value) => {
-                onPaidByChange(value === 'none' ? null : value)
+                setPaidBy(value === 'none' ? null : value)
               }}
             >
               <SelectTrigger id="paid-by" className="w-36">

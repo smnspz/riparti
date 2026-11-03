@@ -27,6 +27,9 @@ export const it = {
   'settings.paypalHandleInvalid':
     'Inserisci un nome PayPal.Me valido: lettere e numeri, massimo 20 caratteri.',
 
+  'history.undo': 'Annulla',
+  'history.redo': 'Ripeti',
+
   'theme.system': 'Sistema',
   'theme.systemHint': 'Segue le impostazioni del dispositivo',
   'theme.light': 'Chiaro',
@@ -169,6 +172,9 @@ export const en: Record<TranslationKey, string> = {
   'settings.paypalHandlePlaceholder': 'paypal.me/yourname',
   'settings.paypalHandleInvalid':
     'Enter a valid PayPal.Me name: letters and numbers, up to 20 characters.',
+
+  'history.undo': 'Undo',
+  'history.redo': 'Redo',
 
   'theme.system': 'System',
   'theme.systemHint': 'Follows your device setting',

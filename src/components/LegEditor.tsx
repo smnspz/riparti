@@ -17,33 +17,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useI18n } from '@/i18n'
 import { formatLegName } from '@/lib/format'
-import type { LatLng } from '@/lib/geo'
-import type { RoutePreference } from '@/lib/routing'
 import { cn } from '@/lib/utils'
-import type { LegDraft, PassengerDraft } from '@/types'
+import { useTripStore } from '@/store/tripStore'
+import type { LegDraft } from '@/types'
 
 interface LegEditorProps {
   /** Leg being edited. */
   leg: LegDraft
   /** Zero-based position of the leg in the trip. */
   index: number
-  /** Passengers that can be selected for the leg. */
-  passengers: PassengerDraft[]
-  /** Apply a partial update to the leg. */
-  onChange: (legId: string, patch: Partial<LegDraft>) => void
-  /** Remove the leg from the trip. */
-  onRemove: (legId: string) => void
-  /** Set an endpoint from a place chosen in the search field. */
-  onSelectPlace: (
-    legId: string,
-    field: 'start' | 'end',
-    point: LatLng,
-    label: string,
-  ) => void
-  /** Show one of the computed route options. */
-  onSelectRoute: (legId: string, preference: RoutePreference) => void
-  /** Replace the passengers present on the leg. */
-  onChangePassengers: (legId: string, passengerIds: string[]) => void
 }
 
 /**
@@ -51,26 +33,17 @@ interface LegEditorProps {
  *
  * @param leg - Leg being edited.
  * @param index - Zero-based position of the leg in the trip.
- * @param passengers - Passengers that can be selected for the leg.
- * @param onChange - Applies a partial update to the leg.
- * @param onRemove - Removes the leg from the trip.
- * @param onSelectPlace - Sets an endpoint from a chosen place.
- * @param onSelectRoute - Shows one of the computed route options.
- * @param onChangePassengers - Replaces the passengers present on the leg.
  * @returns The leg editor card.
  */
-export function LegEditor({
-  leg,
-  index,
-  passengers,
-  onChange,
-  onRemove,
-  onSelectPlace,
-  onSelectRoute,
-  onChangePassengers,
-}: LegEditorProps) {
+export function LegEditor({ leg, index }: LegEditorProps) {
   // Initializations
   const { t, formatDistanceKm, formatEuros } = useI18n()
+  const passengers = useTripStore((state) => state.passengers)
+  const updateLeg = useTripStore((state) => state.updateLeg)
+  const removeLeg = useTripStore((state) => state.removeLeg)
+  const setEndpoint = useTripStore((state) => state.setEndpoint)
+  const selectRoute = useTripStore((state) => state.selectRoute)
+  const setLegPassengers = useTripStore((state) => state.setLegPassengers)
   const hasTollFreeOption = leg.routeOptions.some(
     (option) => option.preference === 'no-tolls',
   )
@@ -90,7 +63,7 @@ export function LegEditor({
             type="button"
             variant="ghost"
             size="icon-sm"
-            onClick={() => onRemove(leg.id)}
+            onClick={() => removeLeg(leg.id)}
             aria-label={t('leg.remove', { n: index + 1 })}
           >
             <Trash2 />
@@ -113,7 +86,7 @@ export function LegEditor({
               placeholder={t('leg.searchStart')}
               value={leg.startLabel}
               onSelect={(point, label) =>
-                onSelectPlace(leg.id, 'start', point, label)
+                setEndpoint(leg.id, 'start', point, label, formatDistanceKm)
               }
             />
           </div>
@@ -130,7 +103,7 @@ export function LegEditor({
               placeholder={t('leg.searchEnd')}
               value={leg.endLabel}
               onSelect={(point, label) =>
-                onSelectPlace(leg.id, 'end', point, label)
+                setEndpoint(leg.id, 'end', point, label, formatDistanceKm)
               }
             />
           </div>
@@ -145,7 +118,7 @@ export function LegEditor({
               value={leg.routePreference ?? ''}
               onValueChange={(value) => {
                 if (value === 'fastest' || value === 'no-tolls') {
-                  onSelectRoute(leg.id, value)
+                  selectRoute(leg.id, value, formatDistanceKm)
                 }
               }}
               className="gap-2"
@@ -233,7 +206,7 @@ export function LegEditor({
               placeholder="0.0"
               value={leg.distanceKm}
               onChange={(event) =>
-                onChange(leg.id, { distanceKm: event.target.value })
+                updateLeg(leg.id, { distanceKm: event.target.value })
               }
             />
           </div>
@@ -250,7 +223,7 @@ export function LegEditor({
               placeholder="6.5"
               value={leg.fuelConsumption}
               onChange={(event) =>
-                onChange(leg.id, { fuelConsumption: event.target.value })
+                updateLeg(leg.id, { fuelConsumption: event.target.value })
               }
             />
           </div>
@@ -267,7 +240,7 @@ export function LegEditor({
               placeholder="1.89"
               value={leg.fuelPriceEuros}
               onChange={(event) =>
-                onChange(leg.id, { fuelPriceEuros: event.target.value })
+                updateLeg(leg.id, { fuelPriceEuros: event.target.value })
               }
             />
           </div>
@@ -284,7 +257,7 @@ export function LegEditor({
               placeholder="0.00"
               value={leg.tollsEuros}
               onChange={(event) =>
-                onChange(leg.id, { tollsEuros: event.target.value })
+                updateLeg(leg.id, { tollsEuros: event.target.value })
               }
             />
           </div>
@@ -295,7 +268,7 @@ export function LegEditor({
             id={`leg-${leg.id}-round-trip`}
             checked={leg.roundTrip}
             onCheckedChange={(checked) =>
-              onChange(leg.id, { roundTrip: checked === true })
+              updateLeg(leg.id, { roundTrip: checked === true })
             }
           />
           <Label
@@ -323,7 +296,7 @@ export function LegEditor({
               variant="outline"
               value={leg.passengerIds}
               onValueChange={(value) =>
-                onChangePassengers(leg.id, value)
+                setLegPassengers(leg.id, value)
               }
               className="w-full flex-wrap justify-start"
               aria-label={t('leg.passengersOnLeg', { n: index + 1 })}

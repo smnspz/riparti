@@ -74,6 +74,9 @@ export function buildPayPalMeUrl(
 /**
  * Read the PayPal.Me handle saved on this device.
  *
+ * The trip store persists the handle with the rest of the trip; this reader
+ * only seeds the store from the key used before the store existed.
+ *
  * @returns The stored handle, or an empty string when none is saved.
  */
 export function readStoredPayPalHandle(): string {
@@ -82,19 +85,5 @@ export function readStoredPayPalHandle(): string {
   } catch {
     // Ignore storage that the browser refuses to expose
     return ''
-  }
-}
-
-/**
- * Save the PayPal.Me handle on this device.
- *
- * @param handle - Handle to persist.
- * @returns Nothing. Writes to local storage.
- */
-export function storePayPalHandle(handle: string): void {
-  try {
-    window.localStorage.setItem(PAYPAL_HANDLE_STORAGE_KEY, handle)
-  } catch {
-    // Ignore storage that the browser refuses to expose
   }
 }

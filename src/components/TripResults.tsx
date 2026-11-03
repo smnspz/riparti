@@ -28,26 +28,19 @@ import {
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { useI18n } from '@/i18n'
-import { OPEN_SETTINGS_EVENT } from '@/lib/events'
 import { formatLegName } from '@/lib/format'
 import {
   buildPayPalMeUrl,
   isValidPayPalHandle,
   normalizePayPalHandle,
 } from '@/lib/payment'
-import type { LegDraft } from '@/types'
+import { useTripStore } from '@/store/tripStore'
 
 interface TripResultsProps {
-  /** Legs currently declared in the editor. */
-  legs: LegDraft[]
   /** Calculation result, or null when the trip is invalid. */
   result: TripResult | null
   /** Validation message, or null when the trip is valid. */
   error: string | null
-  /** Id of the passenger who paid the trip, if chosen. */
-  paidById: string | null
-  /** PayPal.Me handle used for payment requests. */
-  paypalHandle: string
 }
 
 /**
@@ -56,22 +49,17 @@ interface TripResultsProps {
  * Each share can be requested through PayPal.Me once the payer and their
  * handle are known, and the whole summary can be shared as plain text.
  *
- * @param legs - Legs currently declared in the editor.
  * @param result - Calculation result, or null when the trip is invalid.
  * @param error - Validation message, or null when the trip is valid.
- * @param paidById - Id of the passenger who paid the trip, if chosen.
- * @param paypalHandle - PayPal.Me handle used for payment requests.
  * @returns The results card.
  */
-export function TripResults({
-  legs,
-  result,
-  error,
-  paidById,
-  paypalHandle,
-}: TripResultsProps) {
+export function TripResults({ result, error }: TripResultsProps) {
   // Initializations
   const { t, formatDistanceKm, formatEuros, formatLiters } = useI18n()
+  const legs = useTripStore((state) => state.legs)
+  const paidById = useTripStore((state) => state.paidById)
+  const paypalHandle = useTripStore((state) => state.paypalHandle)
+  const setSettingsOpen = useTripStore((state) => state.setSettingsOpen)
   const [copied, setCopied] = useState(false)
   const [copyFailed, setCopyFailed] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
@@ -245,11 +233,11 @@ export function TripResults({
   /**
    * Close the dialog and open the settings.
    *
-   * @returns Nothing. Dispatches the settings event.
+   * @returns Nothing. Opens the settings dialog.
    */
   function handleOpenSettings(): void {
     setShareOpen(false)
-    window.dispatchEvent(new Event(OPEN_SETTINGS_EVENT))
+    setSettingsOpen(true)
   }
 
   return (

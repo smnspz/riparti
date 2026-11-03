@@ -10,6 +10,9 @@ The project has two parts:
 - a dependency-free calculation module in `src/core/` that works in integer
   euro cents so the shares always add up to the trip total exactly.
 
+The editable trip lives in a small zustand store in `src/store/`, which keeps
+the drafts, the undo history, and the browser persistence in one place.
+
 ## Web app
 
 ```sh
@@ -37,6 +40,11 @@ immediately visible.
   passenger selection, so passengers can join only some legs.
 - The map draws each leg's road geometry with numbered markers and a dashed line
   for round trips.
+- **Undo** and **redo** on the map, or Cmd/Ctrl+Z and Shift+Cmd/Ctrl+Z, revert
+  endpoint, route, leg, and passenger changes. Fuel, toll, and round-trip fields
+  keep the browser's own text undo.
+- The trip is saved in the browser: passengers, legs, the payer, and the
+  PayPal.Me link come back after a reload. The undo history is per session.
 - The result card updates live with the trip total, each passenger's share, and
   the per-leg fuel/litre/toll breakdown.
 - **Paid by** in the passengers card marks who fronted the trip. With a

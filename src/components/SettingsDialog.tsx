@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Monitor, Moon, Settings, Sun, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -17,11 +17,11 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useI18n } from '@/i18n'
 import type { TranslationKey } from '@/i18n'
-import { OPEN_SETTINGS_EVENT } from '@/lib/events'
 import {
   isValidPayPalHandle,
   normalizePayPalHandle,
 } from '@/lib/payment'
+import { useTripStore } from '@/store/tripStore'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/theme'
 import type { Theme } from '@/theme'
@@ -59,36 +59,20 @@ const THEME_OPTIONS: ThemeOption[] = [
   },
 ]
 
-interface SettingsDialogProps {
-  /** PayPal.Me handle used for payment requests. */
-  paypalHandle: string
-  /** Update the stored PayPal.Me handle. */
-  onPaypalHandleChange: (handle: string) => void
-}
-
 /**
  * Settings button opening the language, theme, and payment dialog.
  *
- * @param paypalHandle - PayPal.Me handle used for payment requests.
- * @param onPaypalHandleChange - Updates the stored PayPal.Me handle.
  * @returns The settings trigger and modal.
  */
-export function SettingsDialog({
-  paypalHandle,
-  onPaypalHandleChange,
-}: SettingsDialogProps) {
+export function SettingsDialog() {
   // Initializations
   const { language, setLanguage, t } = useI18n()
   const { theme, setTheme } = useTheme()
+  const paypalHandle = useTripStore((state) => state.paypalHandle)
+  const setPaypalHandle = useTripStore((state) => state.setPaypalHandle)
+  const open = useTripStore((state) => state.settingsOpen)
+  const setOpen = useTripStore((state) => state.setSettingsOpen)
   const [handleError, setHandleError] = useState(false)
-  const [open, setOpen] = useState(false)
-
-  // Open the dialog when another component asks for it
-  useEffect(() => {
-    const handleOpen = () => setOpen(true)
-    window.addEventListener(OPEN_SETTINGS_EVENT, handleOpen)
-    return () => window.removeEventListener(OPEN_SETTINGS_EVENT, handleOpen)
-  }, [])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -217,13 +201,13 @@ export function SettingsDialog({
             aria-invalid={handleError}
             aria-describedby="settings-paypal-handle-hint"
             onChange={(event) => {
-              onPaypalHandleChange(event.target.value)
+              setPaypalHandle(event.target.value)
               setHandleError(false)
             }}
             onBlur={() => {
               const normalized = normalizePayPalHandle(paypalHandle)
               if (normalized !== paypalHandle) {
-                onPaypalHandleChange(normalized)
+                setPaypalHandle(normalized)
               }
               setHandleError(
                 normalized !== '' && !isValidPayPalHandle(normalized),

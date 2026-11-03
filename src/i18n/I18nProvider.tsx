@@ -41,7 +41,7 @@ const I18nContext = createContext<I18nContextValue | null>(null)
  *
  * @returns The stored or default language.
  */
-function readStoredLanguage(): Language {
+export function readStoredLanguage(): Language {
   if (typeof window === 'undefined') {
     return DEFAULT_LANGUAGE
   }
