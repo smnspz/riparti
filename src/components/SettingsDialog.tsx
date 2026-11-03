@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Monitor, Moon, Settings, Sun, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,10 +12,16 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useI18n } from '@/i18n'
 import type { TranslationKey } from '@/i18n'
+import { OPEN_SETTINGS_EVENT } from '@/lib/events'
+import {
+  isValidPayPalHandle,
+  normalizePayPalHandle,
+} from '@/lib/payment'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/theme'
 import type { Theme } from '@/theme'
@@ -52,18 +59,39 @@ const THEME_OPTIONS: ThemeOption[] = [
   },
 ]
 
+interface SettingsDialogProps {
+  /** PayPal.Me handle used for payment requests. */
+  paypalHandle: string
+  /** Update the stored PayPal.Me handle. */
+  onPaypalHandleChange: (handle: string) => void
+}
+
 /**
- * Header settings button opening the language and theme dialog.
+ * Settings button opening the language, theme, and payment dialog.
  *
+ * @param paypalHandle - PayPal.Me handle used for payment requests.
+ * @param onPaypalHandleChange - Updates the stored PayPal.Me handle.
  * @returns The settings trigger and modal.
  */
-export function SettingsDialog() {
+export function SettingsDialog({
+  paypalHandle,
+  onPaypalHandleChange,
+}: SettingsDialogProps) {
   // Initializations
   const { language, setLanguage, t } = useI18n()
   const { theme, setTheme } = useTheme()
+  const [handleError, setHandleError] = useState(false)
+  const [open, setOpen] = useState(false)
+
+  // Open the dialog when another component asks for it
+  useEffect(() => {
+    const handleOpen = () => setOpen(true)
+    window.addEventListener(OPEN_SETTINGS_EVENT, handleOpen)
+    return () => window.removeEventListener(OPEN_SETTINGS_EVENT, handleOpen)
+  }, [])
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           type="button"
@@ -76,7 +104,10 @@ export function SettingsDialog() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md" showCloseButton={false}>
+      <DialogContent
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md"
+        showCloseButton={false}
+      >
         <DialogHeader>
           <DialogTitle>{t('settings.title')}</DialogTitle>
           <DialogDescription>{t('settings.description')}</DialogDescription>
@@ -163,6 +194,58 @@ export function SettingsDialog() {
               </Label>
             ))}
           </RadioGroup>
+        </fieldset>
+
+        <fieldset className="flex flex-col">
+          <legend className="mb-1.5 text-xs font-medium text-muted-foreground">
+            {t('settings.payments')}
+          </legend>
+          <Label
+            htmlFor="settings-paypal-handle"
+            className="mb-1.5 text-xs font-medium text-muted-foreground"
+          >
+            {t('settings.paypalHandle')}
+          </Label>
+          <Input
+            id="settings-paypal-handle"
+            type="text"
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder={t('settings.paypalHandlePlaceholder')}
+            value={paypalHandle}
+            aria-invalid={handleError}
+            aria-describedby="settings-paypal-handle-hint"
+            onChange={(event) => {
+              onPaypalHandleChange(event.target.value)
+              setHandleError(false)
+            }}
+            onBlur={() => {
+              const normalized = normalizePayPalHandle(paypalHandle)
+              if (normalized !== paypalHandle) {
+                onPaypalHandleChange(normalized)
+              }
+              setHandleError(
+                normalized !== '' && !isValidPayPalHandle(normalized),
+              )
+            }}
+          />
+          {handleError ? (
+            <p
+              id="settings-paypal-handle-hint"
+              className="mt-1.5 text-xs text-destructive"
+              role="alert"
+            >
+              {t('settings.paypalHandleInvalid')}
+            </p>
+          ) : (
+            <p
+              id="settings-paypal-handle-hint"
+              className="mt-1.5 text-xs text-muted-foreground"
+            >
+              {t('settings.paypalHandleHint')}
+            </p>
+          )}
         </fieldset>
       </DialogContent>
     </Dialog>

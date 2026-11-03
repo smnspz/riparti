@@ -39,16 +39,25 @@ immediately visible.
   for round trips.
 - The result card updates live with the trip total, each passenger's share, and
   the per-leg fuel/litre/toll breakdown.
+- **Paid by** in the passengers card marks who fronted the trip. With a
+  PayPal.Me link saved in settings, every other passenger gets a **Request**
+  link pre-filled with their exact share.
+- **Share summary** opens a preview of a plain-text breakdown with the total,
+  passenger shares, payment links, and leg details, then copies it or opens the
+  system share sheet.
 
 The interface is available in Italian (the default) and English, and the theme
 can follow the operating system (the default), stay light, or stay dark. Open
-the **settings** (gear button in the header) to change either; both choices are
-saved in the browser. Currency, distances, and place search results follow the
+the **settings** gear in the top-right corner of the map to change the language
+and theme and to save the PayPal.Me link of the person who paid; all choices are
+stored in the browser. Currency, distances, and place search results follow the
 selected language, and map tiles are darkened with the dark theme.
 
 Map tiles come from OpenStreetMap, address and place search from Photon, and
 routing from the public Valhalla demo server; all three need network access and
-none needs an API key. If routing is unavailable, the app falls back to a straight line, shows a
+none needs an API key. Payment requests are plain PayPal.Me links: Backseat does
+not connect to PayPal, take payments, or know whether a share was paid. If
+routing is unavailable, the app falls back to a straight line, shows a
 warning, and leaves the kilometre field editable. For production traffic, point
 the endpoints in `src/lib/routing.ts` and `src/lib/geocoding.ts` at self-hosted
 instances.

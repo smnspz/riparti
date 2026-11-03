@@ -7,7 +7,6 @@ export type TranslationParams = Record<string, string | number>
 /** Italian dictionary, the reference for every translation key. */
 export const it = {
   'app.documentTitle': 'Backseat — Dividi carburante e pedaggi',
-  'app.tagline': 'Dividi carburante e pedaggi, tratta per tratta.',
   'app.invalidTrip': 'Il viaggio non è valido.',
 
   'language.label': 'Lingua',
@@ -15,11 +14,18 @@ export const it = {
   'language.english': 'Inglese',
 
   'settings.title': 'Impostazioni',
-  'settings.description': "Lingua e aspetto dell'app.",
+  'settings.description': "Lingua, aspetto e pagamenti.",
   'settings.open': 'Apri impostazioni',
   'settings.close': 'Chiudi impostazioni',
   'settings.language': 'Lingua',
   'settings.theme': 'Tema',
+  'settings.payments': 'Pagamenti',
+  'settings.paypalHandle': 'Link PayPal.Me',
+  'settings.paypalHandleHint':
+    'Il link della persona che ha pagato, usato per chiedere le quote agli altri passeggeri. Resta salvato solo su questo dispositivo.',
+  'settings.paypalHandlePlaceholder': 'paypal.me/tuonome',
+  'settings.paypalHandleInvalid':
+    'Inserisci un nome PayPal.Me valido: lettere e numeri, massimo 20 caratteri.',
 
   'theme.system': 'Sistema',
   'theme.systemHint': 'Segue le impostazioni del dispositivo',
@@ -36,6 +42,9 @@ export const it = {
   'passengers.add': 'Aggiungi',
   'passengers.errorEmpty': 'Inserisci un nome per il passeggero.',
   'passengers.errorDuplicate': 'Questo passeggero esiste già.',
+  'payment.paidBy': 'Pagato da',
+  'payment.paidByPlaceholder': 'Chi ha pagato?',
+  'payment.paidByNone': 'Nessuno',
 
   'legs.title': 'Tratte',
   'legs.clear': 'Cancella',
@@ -82,6 +91,34 @@ export const it = {
   'results.title': 'Risultato',
   'results.empty': 'Aggiungi una tratta per vedere la divisione.',
   'results.total': 'Totale viaggio',
+  'results.choosePayer':
+    'Scegli chi ha pagato tra i passeggeri per chiedere le quote.',
+  'results.payerBadge': 'Ha pagato',
+  'results.paymentHint':
+    'Aggiungi nelle impostazioni il link PayPal.Me di {name} per chiedere le quote.',
+  'results.request': 'Chiedi',
+  'results.requestLabel': 'Chiedi {amount} per {name}',
+  'results.share': 'Condividi riepilogo',
+  'results.shareDescription':
+    'Copia il testo o aprilo nel menu di condivisione del dispositivo.',
+  'results.shareIncludesPaypal': 'Include le richieste PayPal di {name}.',
+  'results.shareNeedPayer':
+    'Scegli chi ha pagato tra i passeggeri per includere le richieste PayPal.',
+  'results.shareAction': 'Condividi',
+  'results.copy': 'Copia',
+  'results.close': 'Chiudi',
+  'results.choosePayerAction': 'Scegli chi ha pagato',
+  'results.openSettings': 'Apri impostazioni',
+  'results.copied': 'Copiato',
+  'results.copyFailed': 'Copia non riuscita. Seleziona il testo manualmente.',
+  'results.summaryTitle': 'Riepilogo viaggio',
+  'results.summaryShares': 'Quote',
+  'results.summaryLegs': 'Tratte',
+  'results.summaryPassenger': '{name}: {amount}',
+  'results.summaryPayer': '{name}: {amount} (ha pagato)',
+  'results.summaryPaypal': 'PayPal: {url}',
+  'results.summaryLegTotal': 'Totale tratta: {total}',
+  'results.summaryLegShares': 'Ripartizione: {shares}',
   'results.perLeg': 'Per tratta',
   'results.roundTrip': 'andata e ritorno',
   'results.legSummary':
@@ -113,7 +150,6 @@ export type TranslationKey = keyof typeof it
 /** English dictionary, required to cover every Italian key. */
 export const en: Record<TranslationKey, string> = {
   'app.documentTitle': 'Backseat — Split fuel and tolls',
-  'app.tagline': 'Split fuel and tolls, leg by leg.',
   'app.invalidTrip': 'The trip is not valid.',
 
   'language.label': 'Language',
@@ -121,11 +157,18 @@ export const en: Record<TranslationKey, string> = {
   'language.english': 'English',
 
   'settings.title': 'Settings',
-  'settings.description': 'Language and appearance.',
+  'settings.description': 'Language, appearance, and payments.',
   'settings.open': 'Open settings',
   'settings.close': 'Close settings',
   'settings.language': 'Language',
   'settings.theme': 'Theme',
+  'settings.payments': 'Payments',
+  'settings.paypalHandle': 'PayPal.Me link',
+  'settings.paypalHandleHint':
+    'The link of the person who paid, used to request shares from the other passengers. Stored only on this device.',
+  'settings.paypalHandlePlaceholder': 'paypal.me/yourname',
+  'settings.paypalHandleInvalid':
+    'Enter a valid PayPal.Me name: letters and numbers, up to 20 characters.',
 
   'theme.system': 'System',
   'theme.systemHint': 'Follows your device setting',
@@ -142,6 +185,9 @@ export const en: Record<TranslationKey, string> = {
   'passengers.add': 'Add',
   'passengers.errorEmpty': 'Enter a passenger name.',
   'passengers.errorDuplicate': 'That passenger already exists.',
+  'payment.paidBy': 'Paid by',
+  'payment.paidByPlaceholder': 'Who paid?',
+  'payment.paidByNone': 'None',
 
   'legs.title': 'Legs',
   'legs.clear': 'Clear',
@@ -187,6 +233,34 @@ export const en: Record<TranslationKey, string> = {
   'results.title': 'Result',
   'results.empty': 'Add a leg to see the split.',
   'results.total': 'Total trip',
+  'results.choosePayer':
+    'Choose who paid among the passengers to request the shares.',
+  'results.payerBadge': 'Paid',
+  'results.paymentHint':
+    'Add the PayPal.Me link of {name} in settings to request the shares.',
+  'results.request': 'Request',
+  'results.requestLabel': 'Request {amount} from {name}',
+  'results.share': 'Share summary',
+  'results.shareDescription':
+    'Copy the text or open it in the device share menu.',
+  'results.shareIncludesPaypal': 'Includes PayPal requests from {name}.',
+  'results.shareNeedPayer':
+    'Choose who paid among the passengers to include PayPal requests.',
+  'results.shareAction': 'Share',
+  'results.copy': 'Copy',
+  'results.close': 'Close',
+  'results.choosePayerAction': 'Choose who paid',
+  'results.openSettings': 'Open settings',
+  'results.copied': 'Copied',
+  'results.copyFailed': 'Copy failed. Select the text manually.',
+  'results.summaryTitle': 'Trip summary',
+  'results.summaryShares': 'Shares',
+  'results.summaryLegs': 'Legs',
+  'results.summaryPassenger': '{name}: {amount}',
+  'results.summaryPayer': '{name}: {amount} (paid)',
+  'results.summaryPaypal': 'PayPal: {url}',
+  'results.summaryLegTotal': 'Leg total: {total}',
+  'results.summaryLegShares': 'Split: {shares}',
   'results.perLeg': 'Per leg',
   'results.roundTrip': 'round trip',
   'results.legSummary': '{distance} km · {liters} L · fuel {fuel} · tolls {tolls}',

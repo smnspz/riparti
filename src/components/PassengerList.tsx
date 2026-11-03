@@ -10,6 +10,14 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useI18n } from '@/i18n'
 import type { TranslationKey } from '@/i18n'
 import type { PassengerDraft } from '@/types'
@@ -17,24 +25,32 @@ import type { PassengerDraft } from '@/types'
 interface PassengerListProps {
   /** Passengers currently declared on the trip. */
   passengers: PassengerDraft[]
+  /** Id of the passenger who paid the trip, if chosen. */
+  paidById: string | null
   /** Add a passenger with an already trimmed, unique name. */
   onAdd: (name: string) => void
   /** Remove a passenger and their membership from every leg. */
   onRemove: (passengerId: string) => void
+  /** Update the passenger who paid the trip. */
+  onPaidByChange: (passengerId: string | null) => void
 }
 
 /**
  * Card listing the trip passengers with an inline add form.
  *
  * @param passengers - Passengers currently declared on the trip.
+ * @param paidById - Id of the passenger who paid, or null.
  * @param onAdd - Called with a valid, unique passenger name.
  * @param onRemove - Called with the id of the passenger to remove.
+ * @param onPaidByChange - Updates the passenger who paid the trip.
  * @returns The passenger management card.
  */
 export function PassengerList({
   passengers,
+  paidById,
   onAdd,
   onRemove,
+  onPaidByChange,
 }: PassengerListProps) {
   // Initializations
   const { t } = useI18n()
@@ -133,6 +149,46 @@ export function PassengerList({
           <p className="text-sm text-destructive" role="alert">
             {t(error)}
           </p>
+        )}
+
+        {passengers.length > 0 && (
+          <div className="flex items-center justify-between gap-3">
+            <Label
+              htmlFor="paid-by"
+              className="text-xs font-medium text-muted-foreground"
+            >
+              {t('payment.paidBy')}
+            </Label>
+            <Select
+              value={paidById ?? 'none'}
+              onValueChange={(value) => {
+                onPaidByChange(value === 'none' ? null : value)
+              }}
+            >
+              <SelectTrigger id="paid-by" className="w-36">
+                {paidById === null ? (
+                  <span
+                    data-slot="select-value"
+                    className="line-clamp-1 text-muted-foreground"
+                  >
+                    {t('payment.paidByPlaceholder')}
+                  </span>
+                ) : (
+                  <SelectValue />
+                )}
+              </SelectTrigger>
+              <SelectContent position="popper" align="end" sideOffset={4}>
+                <SelectItem value="none">
+                  {t('payment.paidByNone')}
+                </SelectItem>
+                {passengers.map((passenger) => (
+                  <SelectItem key={passenger.id} value={passenger.id}>
+                    {passenger.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
       </CardContent>
     </Card>

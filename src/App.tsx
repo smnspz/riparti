@@ -13,6 +13,7 @@ import type { Language, Translate } from '@/i18n'
 import { translateTripError } from '@/i18n/tripErrors'
 import { formatDistanceKm as formatDistanceKmForLanguage } from '@/lib/format'
 import { haversineKm, type LatLng } from '@/lib/geo'
+import { readStoredPayPalHandle, storePayPalHandle } from '@/lib/payment'
 import { fetchRoadRoutes, type RoutePreference } from '@/lib/routing'
 import { buildTrip } from '@/lib/trip'
 import type { LegDraft, PassengerDraft } from '@/types'
@@ -110,6 +111,10 @@ export default function App() {
   const [legs, setLegs] = useState<LegDraft[]>(() => [
     createSeedLeg(language),
   ])
+  const [paidById, setPaidById] = useState<string | null>(null)
+  const [paypalHandle, setPaypalHandle] = useState<string>(
+    readStoredPayPalHandle,
+  )
   const routeRequestIds = useRef(new Map<string, number>())
   const hasRoutedSeed = useRef(false)
 
@@ -137,6 +142,11 @@ export default function App() {
       }),
     )
   }, [language])
+
+  // Persist the PayPal.Me handle on this device
+  useEffect(() => {
+    storePayPalHandle(paypalHandle)
+  }, [paypalHandle])
 
   const calculation = computeTrip(passengers, legs, t)
 
@@ -307,6 +317,9 @@ export default function App() {
         passengerIds: leg.passengerIds.filter((id) => id !== passengerId),
       })),
     )
+    if (paidById === passengerId) {
+      setPaidById(null)
+    }
   }
 
   /**
@@ -436,23 +449,17 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-dvh flex-col bg-muted/40 max-md:h-auto max-md:min-h-dvh">
-      <header className="flex items-center justify-between gap-3 border-b bg-background px-5 py-4">
-        <div className="flex flex-col">
-          <h1 className="font-heading text-xl font-semibold tracking-tight">Backseat</h1>
-          <p className="text-sm text-muted-foreground">{t('app.tagline')}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <SettingsDialog />
-        </div>
-      </header>
+    <div className="flex h-dvh flex-col bg-muted/40 max-md:h-auto max-md:min-h-svh md:overflow-hidden">
+      <h1 className="sr-only">Backseat</h1>
 
       <main className="grid min-h-0 flex-1 grid-cols-[minmax(360px,430px)_1fr] max-md:grid-cols-1">
-        <aside className="sidebar-scroll flex min-h-0 flex-col gap-5 overflow-y-auto p-5 max-md:order-2 max-md:overflow-visible [&>*]:shrink-0">
+        <aside className="sidebar-scroll flex min-h-0 flex-col gap-5 overflow-y-auto overscroll-contain p-5 max-md:order-2 max-md:overflow-visible [&>*]:shrink-0">
           <PassengerList
             passengers={passengers}
+            paidById={paidById}
             onAdd={handleAddPassenger}
             onRemove={handleRemovePassenger}
+            onPaidByChange={setPaidById}
           />
 
           <section className="flex flex-col gap-3" aria-labelledby="legs-title">
@@ -517,11 +524,19 @@ export default function App() {
             legs={legs}
             result={calculation.result}
             error={calculation.error}
+            paidById={paidById}
+            paypalHandle={paypalHandle}
           />
         </aside>
 
-        <section className="relative isolate min-h-0 border-l max-md:order-1 max-md:h-[52dvh] max-md:border-b max-md:border-l-0">
+        <section className="relative isolate min-h-0 border-l max-md:order-1 max-md:h-[52svh] max-md:border-b max-md:border-l-0">
           <MapView legs={legs} />
+          <div className="absolute top-3 right-3 z-[1100]">
+            <SettingsDialog
+              paypalHandle={paypalHandle}
+              onPaypalHandleChange={setPaypalHandle}
+            />
+          </div>
         </section>
       </main>
     </div>
