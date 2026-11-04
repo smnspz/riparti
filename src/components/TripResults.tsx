@@ -26,7 +26,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Separator } from '@/components/ui/separator'
 import { useI18n } from '@/i18n'
 import { formatLegName } from '@/lib/format'
 import {
@@ -264,7 +263,7 @@ export function TripResults({ result, error }: TripResultsProps) {
 
         {legsCount > 0 && error === null && result !== null && (
           <>
-            <div className="flex items-baseline justify-between gap-3 border-b pb-3">
+            <div className="flex items-baseline justify-between gap-3 border-b pb-4">
               <span className="text-sm font-medium">
                 {t('results.total')}
               </span>
@@ -288,8 +287,8 @@ export function TripResults({ result, error }: TripResultsProps) {
               </p>
             )}
 
-            <div className="flex flex-col">
-              {result.passengers.map((passenger, index) => {
+            <div className="flex flex-col divide-y">
+              {result.passengers.map((passenger) => {
                 const isPayer = passenger.id === payer?.id
                 const requestUrl =
                   canRequest && !isPayer
@@ -299,44 +298,44 @@ export function TripResults({ result, error }: TripResultsProps) {
                       )
                     : null
                 return (
-                  <div key={passenger.id} className="flex flex-col gap-2">
-                    {index > 0 && <Separator />}
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <span className="flex min-w-0 items-center gap-2">
-                        <span className="truncate">{passenger.name}</span>
-                        {isPayer && (
-                          <Badge variant="secondary">
-                            {t('results.payerBadge')}
-                          </Badge>
-                        )}
+                  <div
+                    key={passenger.id}
+                    className="flex items-center justify-between gap-2 py-2 text-sm first:pt-0 last:pb-0"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="truncate">{passenger.name}</span>
+                      {isPayer && (
+                        <Badge variant="secondary">
+                          {t('results.payerBadge')}
+                        </Badge>
+                      )}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      <span className="font-medium tabular-nums">
+                        {formatEuros(passenger.totalCents)}
                       </span>
-                      <span className="flex shrink-0 items-center gap-1.5">
-                        <span className="font-medium tabular-nums">
-                          {formatEuros(passenger.totalCents)}
-                        </span>
-                        {requestUrl !== null && (
-                          <Button
-                            asChild
-                            variant="ghost"
-                            size="xs"
-                            className="text-primary"
+                      {requestUrl !== null && (
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="xs"
+                          className="text-primary"
+                        >
+                          <a
+                            href={requestUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={t('results.requestLabel', {
+                              name: passenger.name,
+                              amount: formatEuros(passenger.totalCents),
+                            })}
                           >
-                            <a
-                              href={requestUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              aria-label={t('results.requestLabel', {
-                                name: passenger.name,
-                                amount: formatEuros(passenger.totalCents),
-                              })}
-                            >
-                              {t('results.request')}
-                              <ArrowUpRight data-icon="inline-end" />
-                            </a>
-                          </Button>
-                        )}
-                      </span>
-                    </div>
+                            {t('results.request')}
+                            <ArrowUpRight data-icon="inline-end" />
+                          </a>
+                        </Button>
+                      )}
+                    </span>
                   </div>
                 )
               })}

@@ -76,18 +76,20 @@ export function SettingsDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon-sm"
-          className="pointer-coarse:size-11"
-          aria-label={t('settings.open')}
-          title={t('settings.open')}
-        >
-          <Settings />
-        </Button>
-      </DialogTrigger>
+      <div className="flex rounded-lg border bg-background/95 p-0.5 shadow-sm pointer-coarse:p-1">
+        <DialogTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="pointer-coarse:size-11"
+            aria-label={t('settings.open')}
+            title={t('settings.open')}
+          >
+            <Settings />
+          </Button>
+        </DialogTrigger>
+      </div>
 
       <DialogContent
         className="max-h-[calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-y-auto sm:max-w-md"
