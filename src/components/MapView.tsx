@@ -10,6 +10,11 @@ import {
 } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip as HelpTooltip,
+  TooltipContent as HelpTooltipContent,
+  TooltipTrigger as HelpTooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { formatLegName } from '@/lib/format'
 import { haversineKm, type LatLng } from '@/lib/geo'
@@ -763,30 +768,46 @@ export function MapView({ legs }: MapViewProps) {
         </p>
 
         <div className="pointer-events-auto flex flex-col items-center gap-0.5 rounded-lg border bg-background/95 p-0.5 shadow-sm pointer-coarse:gap-1 pointer-coarse:p-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="pointer-coarse:size-11"
-            onClick={() => map?.zoomIn()}
-            disabled={map === null || zoomState.zoom >= zoomState.max}
-            aria-label={t('map.zoomIn')}
-            title={t('map.zoomIn')}
-          >
-            <Plus />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="pointer-coarse:size-11"
-            onClick={() => map?.zoomOut()}
-            disabled={map === null || zoomState.zoom <= zoomState.min}
-            aria-label={t('map.zoomOut')}
-            title={t('map.zoomOut')}
-          >
-            <Minus />
-          </Button>
+          <HelpTooltip>
+            <HelpTooltipTrigger asChild>
+              <span className="inline-flex">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="pointer-coarse:size-11"
+                  onClick={() => map?.zoomIn()}
+                  disabled={map === null || zoomState.zoom >= zoomState.max}
+                  aria-label={t('map.zoomIn')}
+                >
+                  <Plus />
+                </Button>
+              </span>
+            </HelpTooltipTrigger>
+            <HelpTooltipContent side="left" sideOffset={4}>
+              {t('map.zoomIn')}
+            </HelpTooltipContent>
+          </HelpTooltip>
+          <HelpTooltip>
+            <HelpTooltipTrigger asChild>
+              <span className="inline-flex">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="pointer-coarse:size-11"
+                  onClick={() => map?.zoomOut()}
+                  disabled={map === null || zoomState.zoom <= zoomState.min}
+                  aria-label={t('map.zoomOut')}
+                >
+                  <Minus />
+                </Button>
+              </span>
+            </HelpTooltipTrigger>
+            <HelpTooltipContent side="left" sideOffset={4}>
+              {t('map.zoomOut')}
+            </HelpTooltipContent>
+          </HelpTooltip>
         </div>
       </div>
     </div>

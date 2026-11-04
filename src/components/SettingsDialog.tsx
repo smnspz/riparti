@@ -14,6 +14,11 @@ import {
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useI18n } from '@/i18n'
 import type { TranslationKey } from '@/i18n'
@@ -77,18 +82,24 @@ export function SettingsDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <div className="flex rounded-lg border bg-background/95 p-0.5 shadow-sm pointer-coarse:p-1">
-        <DialogTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="pointer-coarse:size-11"
-            aria-label={t('settings.open')}
-            title={t('settings.open')}
-          >
-            <Settings />
-          </Button>
-        </DialogTrigger>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="pointer-coarse:size-11"
+                aria-label={t('settings.open')}
+              >
+                <Settings />
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" align="end" sideOffset={4}>
+            {t('settings.open')}
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <DialogContent

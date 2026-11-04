@@ -1,6 +1,11 @@
 import { useEffect } from 'react'
 import { Redo2, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { useTripStore } from '@/store/tripStore'
 
@@ -70,30 +75,46 @@ export function UndoRedo() {
 
   return (
     <div className="flex items-center gap-0.5 rounded-lg border bg-background/95 p-0.5 shadow-sm pointer-coarse:gap-1 pointer-coarse:p-1">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        className="pointer-coarse:size-11"
-        onClick={undo}
-        disabled={!canUndo}
-        aria-label={t('history.undo')}
-        title={t('history.undo')}
-      >
-        <Undo2 />
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        className="pointer-coarse:size-11"
-        onClick={redo}
-        disabled={!canRedo}
-        aria-label={t('history.redo')}
-        title={t('history.redo')}
-      >
-        <Redo2 />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="pointer-coarse:size-11"
+              onClick={undo}
+              disabled={!canUndo}
+              aria-label={t('history.undo')}
+            >
+              <Undo2 />
+            </Button>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="start" sideOffset={4}>
+          {t('history.undo')}
+        </TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="pointer-coarse:size-11"
+              onClick={redo}
+              disabled={!canRedo}
+              aria-label={t('history.redo')}
+            >
+              <Redo2 />
+            </Button>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="start" sideOffset={4}>
+          {t('history.redo')}
+        </TooltipContent>
+      </Tooltip>
     </div>
   )
 }
