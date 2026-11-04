@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { CarFront } from 'lucide-react'
 
 interface AppHeaderProps {
   /** Page title shown beside the brand. */
@@ -26,18 +25,13 @@ function homeHref(): string {
  */
 export function AppHeader({ title, children }: AppHeaderProps) {
   return (
-    <header className="app-header flex shrink-0 items-center justify-between gap-3 border-b bg-background">
+    <header className="app-header flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b bg-background">
       <div className="flex min-w-0 items-center gap-3">
         <a
           href={homeHref()}
-          className="flex items-center gap-2 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="rounded-lg font-heading text-base font-semibold tracking-tight outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <CarFront aria-hidden className="size-4" />
-          </span>
-          <span className="font-heading text-base font-semibold tracking-tight">
-            Backseat
-          </span>
+          Riparti
         </a>
         <span aria-hidden className="hidden h-4 w-px bg-border sm:block" />
         <h1 className="sr-only font-heading text-sm font-medium text-muted-foreground sm:not-sr-only sm:truncate">

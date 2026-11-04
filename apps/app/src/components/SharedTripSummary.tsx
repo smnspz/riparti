@@ -24,14 +24,12 @@ export function TripMetric({
   detail?: string
 }) {
   return (
-    <div className="flex min-w-0 flex-col gap-1 p-3">
+    <div className="flex flex-1 basis-20 flex-col gap-1 bg-background p-3">
       <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <span className="[&_svg]:size-3.5">{icon}</span>
-        <span className="truncate">{label}</span>
+        <span>{label}</span>
       </span>
-      <span className="truncate text-sm font-semibold tabular-nums">
-        {value}
-      </span>
+      <span className="text-sm font-semibold tabular-nums">{value}</span>
       {detail !== undefined && (
         <span className="text-xs text-muted-foreground tabular-nums">
           {detail}
@@ -69,16 +67,16 @@ export function CostSplit({
           fuel: formatEuros(fuelCents),
           tolls: formatEuros(tollCents),
         })}
-        className="flex h-2 overflow-hidden rounded-full bg-muted"
+        className="split-bar flex h-2 overflow-hidden rounded-full bg-muted [forced-color-adjust:none] forced-colors:border forced-colors:border-[CanvasText] forced-colors:bg-[Canvas]"
       >
         <span
           aria-hidden
-          className="shared-bar h-full bg-primary"
+          className="shared-bar h-full bg-primary [forced-color-adjust:none] forced-colors:bg-[Highlight]"
           style={{ width: `${fuelPercent}%` }}
         />
         <span
           aria-hidden
-          className="shared-bar h-full bg-muted-foreground/60"
+          className="shared-bar h-full bg-muted-foreground/60 [forced-color-adjust:none] forced-colors:bg-[CanvasText]"
           style={{ width: `${tollPercent}%` }}
         />
       </div>
@@ -137,10 +135,10 @@ export function SharedLegCard({
     <article
       id={`leg-card-leg-${index}`}
       tabIndex={-1}
-      className="rounded-lg border bg-background p-3.5 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="shared-leg-card rounded-lg border bg-background p-3.5 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-2.5">
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="flex min-w-32 flex-1 items-start gap-2.5">
           <span
             aria-hidden
             className="leg-index-badge mt-0.5"
@@ -150,7 +148,7 @@ export function SharedLegCard({
           </span>
           <div className="min-w-0">
             <h3
-              className="truncate font-heading text-sm font-semibold"
+              className="font-heading text-base font-semibold text-balance break-words"
               title={title}
             >
               {title}
@@ -164,7 +162,7 @@ export function SharedLegCard({
             </p>
           </div>
         </div>
-        <span className="shrink-0 text-sm font-semibold tabular-nums">
+        <span className="ml-auto shrink-0 text-base font-semibold tabular-nums">
           {formatEuros(leg.totalCents)}
         </span>
       </div>
@@ -175,16 +173,16 @@ export function SharedLegCard({
           fuel: formatEuros(leg.fuelCostCents),
           tolls: formatEuros(leg.tollCents),
         })}
-        className="mt-3 flex h-1.5 overflow-hidden rounded-full bg-muted"
+        className="split-bar mt-3 flex h-1.5 overflow-hidden rounded-full bg-muted [forced-color-adjust:none] forced-colors:border forced-colors:border-[CanvasText] forced-colors:bg-[Canvas]"
       >
         <span
           aria-hidden
-          className="shared-bar h-full bg-primary"
+          className="shared-bar h-full bg-primary [forced-color-adjust:none] forced-colors:bg-[Highlight]"
           style={{ width: `${fuelPercent}%` }}
         />
         <span
           aria-hidden
-          className="shared-bar h-full bg-muted-foreground/60"
+          className="shared-bar h-full bg-muted-foreground/60 [forced-color-adjust:none] forced-colors:bg-[CanvasText]"
           style={{ width: `${tollPercent}%` }}
         />
       </div>
@@ -200,7 +198,7 @@ export function SharedLegCard({
         {leg.shares.map((share) => (
           <span
             key={share.passengerId}
-            className="rounded-full bg-muted px-2 py-0.5 text-xs"
+            className="max-w-full rounded-full bg-muted px-2 py-0.5 text-xs break-words"
           >
             {namesById.get(share.passengerId) ?? share.passengerId}
             <span className="ml-1 font-medium tabular-nums">

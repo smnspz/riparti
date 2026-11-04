@@ -1,4 +1,4 @@
-import type { Trip } from '../core'
+import { calculateTrip, type Trip, type TripResult } from '../core'
 import type { LegDraft, PassengerDraft } from '../types'
 
 /**
@@ -50,4 +50,19 @@ export function buildTrip(
       passengerIds: leg.passengerIds,
     })),
   }
+}
+
+/**
+ * Calculate a trip from editable drafts.
+ *
+ * @param passengers - Passengers currently declared in the editor.
+ * @param legs - Legs currently declared in the editor.
+ * @returns The calculated trip result.
+ * @throws {Error} When the drafts fail validation.
+ */
+export function calculateDraftTrip(
+  passengers: PassengerDraft[],
+  legs: LegDraft[],
+): TripResult {
+  return calculateTrip(buildTrip(passengers, legs))
 }

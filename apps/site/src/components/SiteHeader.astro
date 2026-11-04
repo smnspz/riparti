@@ -1,0 +1,52 @@
+---
+import type { Language } from '../i18n/ui'
+import { ui } from '../i18n/ui'
+
+interface Props {
+  lang: Language
+  /** Path of the same page in the other language. */
+  alternatePath: string
+}
+
+const { lang, alternatePath } = Astro.props
+const copy = ui[lang]
+const otherLang: Language = lang === 'it' ? 'en' : 'it'
+---
+
+<header
+  class="border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+>
+  <div
+    class="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-5 py-4"
+  >
+    <a
+      href={copy.homeHref}
+      class="font-heading text-lg font-semibold tracking-tight text-foreground"
+    >
+      Riparti
+    </a>
+
+    <nav class="flex items-center gap-4 text-sm" aria-label={copy.navLabel}>
+      <a
+        href={copy.privacyHref}
+        class="text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {copy.privacy}
+      </a>
+      <a
+        href={alternatePath}
+        hreflang={otherLang}
+        lang={otherLang}
+        class="text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {copy.languageName}
+      </a>
+      <a
+        href={copy.appHref}
+        class="rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground transition-opacity hover:opacity-90"
+      >
+        {copy.appCta}
+      </a>
+    </nav>
+  </div>
+</header>

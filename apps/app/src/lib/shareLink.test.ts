@@ -105,9 +105,9 @@ describe('shareLink', () => {
   })
 
   it('builds an absolute URL with the share payload in the hash', () => {
-    const url = buildShareUrl(TRIP, 'https://example.com/backseat?x=1#/old')
+    const url = buildShareUrl(TRIP, 'https://example.com/riparti?x=1#/old')
 
-    expect(url).toContain('https://example.com/backseat?x=1#/s/')
+    expect(url).toContain('https://example.com/riparti?x=1#/s/')
     const parsed = new URL(url)
     expect(parseShareHash(parsed.hash).status).toBe('trip')
   })

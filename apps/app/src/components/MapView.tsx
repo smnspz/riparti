@@ -15,7 +15,9 @@ import {
   TooltipContent as HelpTooltipContent,
   TooltipTrigger as HelpTooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useCoarsePointer } from '@/hooks/useCoarsePointer'
 import { useI18n } from '@/i18n'
+import type { Translate } from '@/i18n'
 import { formatLegName } from '@/lib/format'
 import { haversineKm, type LatLng } from '@/lib/geo'
 import {
@@ -24,7 +26,6 @@ import {
   routeEstimateColor,
   routeLineColor,
 } from '@/lib/routeColors'
-import { useTripStore } from '@/store/tripStore'
 import { useTheme, type ResolvedTheme } from '@/theme'
 import type { LegDraft } from '@/types'
 import { AnimatedPolyline } from '@/components/AnimatedPolyline'
@@ -35,11 +36,19 @@ const DEFAULT_CENTER: [number, number] = [42.5, 12.5]
 /** Zoom used before the first route is selected. */
 const DEFAULT_ZOOM = 6
 
+/** Space kept above and to the left of a fitted route. */
+const FIT_PADDING_TOP_LEFT: [number, number] = [48, 48]
+
+/** Extra bottom space clears the attribution bar and zoom controls. */
+const FIT_PADDING_BOTTOM_RIGHT: [number, number] = [48, 72]
+
 interface MapViewProps {
   /** Legs currently declared in the editor. */
   legs: LegDraft[]
   /** Whether the map only presents the trip, without retry actions. */
   readOnly?: boolean
+  /** Retries every leg whose road route failed, when the editor provides it. */
+  onRetryFallbackRoutes?: () => void
 }
 
 /** Zoom level of the map and the limits it can reach. */
@@ -71,6 +80,32 @@ interface RouteLayer {
   lineColor: string
   /** Whether the drawn line is a straight-line estimate, not a road route. */
   isFallback: boolean
+}
+
+/** One endpoint marker, possibly shared by two consecutive legs. */
+interface MapMarker {
+  /** Stable key of the endpoint group. */
+  key: string
+  /** Latitude of the endpoint. */
+  lat: number
+  /** Longitude of the endpoint. */
+  lng: number
+  /** Number shown inside the badge. */
+  label: string
+  /** Route colour used by the badge. */
+  color: string
+  /** Filled start marker or outlined end marker. */
+  variant: 'start' | 'end'
+  /** Name announced for the marker button. */
+  accessibleName: string
+  /** Text shown while hovering the marker. */
+  tooltip: string
+  /** Leg revealed when the marker is activated. */
+  legId: string
+  /** Zero-based position of the leg that owns the marker. */
+  index: number
+  /** Place shown in a merged junction name. */
+  place: string
 }
 
 /** Positions already converted for a route geometry, keyed by its array. */
@@ -182,6 +217,120 @@ function collectRoutes(
   })
 
   return routes
+}
+
+/**
+ * Build one marker per unique endpoint, merging junctions shared by legs.
+ *
+ * Consecutive legs meet at the same place. Rendering two markers there hides
+ * one under the other, so a junction becomes one marker named for both legs
+ * and focused on the leg that starts there.
+ *
+ * @param routes - Drawable route layers.
+ * @param t - Translation function for the current language.
+ * @param formatDistanceKm - Formatter for leg distances.
+ * @returns One marker per unique endpoint.
+ */
+function collectMarkers(
+  routes: RouteLayer[],
+  t: Translate,
+  formatDistanceKm: (km: number) => string,
+): MapMarker[] {
+  // Initializations
+  const groups = new Map<string, MapMarker[]>()
+
+  // Build the start and end marker for every route
+  routes.forEach((route) => {
+    const legName = formatLegName(
+      route.leg,
+      t('leg.title', { n: route.index + 1 }),
+    )
+    const distance =
+      route.leg.distanceKm.trim() === ''
+        ? formatDistanceKm(haversineKm(route.start, route.end))
+        : route.leg.distanceKm
+    const tooltip = t(
+      route.leg.roundTrip
+        ? 'map.legTooltipRoundTrip'
+        : 'map.legTooltip',
+      { name: legName, distance },
+    )
+    const endpoints: Array<{
+      point: LatLng
+      variant: 'start' | 'end'
+      place: string
+      accessibleName: string
+    }> = [
+      {
+        point: route.start,
+        variant: 'start',
+        place: route.leg.startLabel,
+        accessibleName: t('map.markerStart', {
+          n: route.index + 1,
+          place: route.leg.startLabel,
+        }),
+      },
+      {
+        point: route.end,
+        variant: 'end',
+        place: route.leg.endLabel,
+        accessibleName: t('map.markerEnd', {
+          n: route.index + 1,
+          place: route.leg.endLabel,
+        }),
+      },
+    ]
+
+    for (const endpoint of endpoints) {
+      const key = `${endpoint.point.lat.toFixed(4)},${endpoint.point.lng.toFixed(4)}`
+      const marker: MapMarker = {
+        key,
+        lat: endpoint.point.lat,
+        lng: endpoint.point.lng,
+        label: String(route.index + 1),
+        color: route.color,
+        variant: endpoint.variant,
+        accessibleName: endpoint.accessibleName,
+        tooltip,
+        legId: route.leg.id,
+        index: route.index,
+        place: endpoint.place,
+      }
+      const group = groups.get(key)
+      if (group === undefined) {
+        groups.set(key, [marker])
+      } else {
+        group.push(marker)
+      }
+    }
+  })
+
+  // Return one marker for each endpoint group
+  return [...groups.values()].map((group) => {
+    const primary = group.reduce((best, marker) => {
+      if (marker.index !== best.index) {
+        return marker.index > best.index ? marker : best
+      }
+      return marker.variant === 'start' ? marker : best
+    })
+    if (group.length === 1) {
+      return primary
+    }
+
+    // Name a shared junction for every leg that meets there
+    const legNumbers = [...new Set(group.map((marker) => marker.index + 1))]
+      .sort((a, b) => a - b)
+      .join(', ')
+    const junctionName = t('map.markerJunction', {
+      legs: legNumbers,
+      place: primary.place,
+    })
+    return {
+      ...primary,
+      accessibleName: junctionName,
+      tooltip: junctionName,
+    }
+  })
 }
 
 /**
@@ -366,7 +515,11 @@ function FitRoute({
     const bounds = L.latLngBounds(
       points.map((point) => [point.lat, point.lng] as [number, number]),
     )
-    map.fitBounds(bounds, { padding: [48, 48], maxZoom: 12 })
+    map.fitBounds(bounds, {
+      paddingTopLeft: FIT_PADDING_TOP_LEFT,
+      paddingBottomRight: FIT_PADDING_BOTTOM_RIGHT,
+      maxZoom: 12,
+    })
 
     // Refit when the pane changes size, so rotation or a layout switch keeps
     // the endpoints on screen without overriding a deliberate zoom
@@ -376,7 +529,11 @@ function FitRoute({
       frame = requestAnimationFrame(() => {
         map.invalidateSize()
         if (!map.getBounds().contains(bounds)) {
-          map.fitBounds(bounds, { padding: [48, 48], maxZoom: 12 })
+          map.fitBounds(bounds, {
+            paddingTopLeft: FIT_PADDING_TOP_LEFT,
+            paddingBottomRight: FIT_PADDING_BOTTOM_RIGHT,
+            maxZoom: 12,
+          })
         }
       })
     })
@@ -387,6 +544,36 @@ function FitRoute({
       observer.disconnect()
     }
   }, [map, pointsKey])
+
+  return null
+}
+
+/**
+ * Give map gestures to the page when the map is read-only on touch.
+ *
+ * A one-finger drag on a phone is normally a page scroll. A read-only summary
+ * should not steal it, so the map keeps its zoom buttons and lets vertical
+ * scrolling through the container; pointer devices keep full panning.
+ *
+ * @param enabled - Whether the map may handle drag and pinch gestures.
+ * @returns Nothing. Updates the Leaflet handlers and touch action.
+ */
+function MapGestures({ enabled }: { enabled: boolean }) {
+  const map = useMap()
+
+  useEffect(() => {
+    const container = map.getContainer()
+    if (enabled) {
+      map.dragging.enable()
+      map.touchZoom.enable()
+      container.style.touchAction = 'none'
+      return
+    }
+
+    map.dragging.disable()
+    map.touchZoom.disable()
+    container.style.touchAction = 'pan-y pinch-zoom'
+  }, [map, enabled])
 
   return null
 }
@@ -584,13 +771,18 @@ const FallbackMarker = memo(function FallbackMarker({
  *
  * @param legs - Legs currently declared in the editor.
  * @param readOnly - Whether the map only presents the trip.
+ * @param onRetryFallbackRoutes - Retries every leg whose road route failed.
  * @returns The map pane with its overlays.
  */
-export function MapView({ legs, readOnly = false }: MapViewProps) {
+export function MapView({
+  legs,
+  readOnly = false,
+  onRetryFallbackRoutes,
+}: MapViewProps) {
   // Initializations
   const { t, formatDistanceKm } = useI18n()
   const { resolvedTheme } = useTheme()
-  const retryFallbackRoutes = useTripStore((state) => state.retryFallbackRoutes)
+  const coarsePointer = useCoarsePointer()
   const [map, setMap] = useState<L.Map | null>(null)
   const [zoomState, setZoomState] = useState<ZoomState>({
     zoom: DEFAULT_ZOOM,
@@ -598,6 +790,8 @@ export function MapView({ legs, readOnly = false }: MapViewProps) {
     max: 19,
   })
   const routes = collectRoutes(legs, resolvedTheme)
+  const markers = collectMarkers(routes, t, formatDistanceKm)
+  const canUseGestures = !readOnly || !coarsePointer
   const points = routes.flatMap((route) => [route.start, route.end])
   const pointsKey = routes
     .map(
@@ -622,6 +816,8 @@ export function MapView({ legs, readOnly = false }: MapViewProps) {
         scrollWheelZoom
         zoomControl={false}
         attributionControl={false}
+        dragging={canUseGestures}
+        touchZoom={canUseGestures}
         className="h-full w-full"
       >
         <TileLayer
@@ -629,82 +825,52 @@ export function MapView({ legs, readOnly = false }: MapViewProps) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
 
-        {routes.map((route) => {
-          const legName = formatLegName(
-            route.leg,
-            t('leg.title', { n: route.index + 1 }),
-          )
-          const distance =
-            route.leg.distanceKm.trim() === ''
-              ? formatDistanceKm(haversineKm(route.start, route.end))
-              : route.leg.distanceKm
-          const tooltip = t(
-            route.leg.roundTrip
-              ? 'map.legTooltipRoundTrip'
-              : 'map.legTooltip',
-            { name: legName, distance },
-          )
-          const startName = t('map.markerStart', {
-            n: route.index + 1,
-            place: route.leg.startLabel,
-          })
-          const endName = t('map.markerEnd', {
-            n: route.index + 1,
-            place: route.leg.endLabel,
-          })
-
-          return (
-            <Fragment key={route.leg.id}>
-              {route.positions !== null && (
-                <>
-                  {!route.isFallback && (
-                    <AnimatedPolyline
-                      positions={route.positions}
-                      geometryKey={route.geometryKey}
-                      animate={route.leg.route !== null}
-                      pathOptions={buildCasingOptions(route, resolvedTheme)}
-                    />
-                  )}
+        {routes.map((route) => (
+          <Fragment key={route.leg.id}>
+            {route.positions !== null && (
+              <>
+                {!route.isFallback && (
                   <AnimatedPolyline
                     positions={route.positions}
                     geometryKey={route.geometryKey}
                     animate={route.leg.route !== null}
-                    pathOptions={buildPathOptions(route, resolvedTheme)}
+                    pathOptions={buildCasingOptions(route, resolvedTheme)}
                   />
-                </>
-              )}
-              <RouteMarker
-                lat={route.start.lat}
-                lng={route.start.lng}
-                label={String(route.index + 1)}
-                color={route.color}
-                variant="start"
-                accessibleName={startName}
-                tooltip={tooltip}
-                legId={route.leg.id}
-              />
-              <RouteMarker
-                lat={route.end.lat}
-                lng={route.end.lng}
-                label={String(route.index + 1)}
-                color={route.color}
-                variant="end"
-                accessibleName={endName}
-                tooltip={tooltip}
-                legId={route.leg.id}
-              />
-              {route.isFallback && (
-                <FallbackMarker
-                  lat={(route.start.lat + route.end.lat) / 2}
-                  lng={(route.start.lng + route.end.lng) / 2}
-                  label={t('map.fallbackLabel')}
+                )}
+                <AnimatedPolyline
+                  positions={route.positions}
+                  geometryKey={route.geometryKey}
+                  animate={route.leg.route !== null}
+                  pathOptions={buildPathOptions(route, resolvedTheme)}
                 />
-              )}
-            </Fragment>
-          )
-        })}
+              </>
+            )}
+            {route.isFallback && (
+              <FallbackMarker
+                lat={(route.start.lat + route.end.lat) / 2}
+                lng={(route.start.lng + route.end.lng) / 2}
+                label={t('map.fallbackLabel')}
+              />
+            )}
+          </Fragment>
+        ))}
+
+        {markers.map((marker) => (
+          <RouteMarker
+            key={marker.key}
+            lat={marker.lat}
+            lng={marker.lng}
+            label={marker.label}
+            color={marker.color}
+            variant={marker.variant}
+            accessibleName={marker.accessibleName}
+            tooltip={marker.tooltip}
+            legId={marker.legId}
+          />
+        ))}
 
         <FitRoute points={points} pointsKey={pointsKey} />
+        <MapGestures enabled={canUseGestures} />
         <ZoomTracker onChange={setZoomState} />
       </MapContainer>
 
@@ -721,7 +887,10 @@ export function MapView({ legs, readOnly = false }: MapViewProps) {
         </div>
       )}
 
-      {!readOnly && !isRouting && fallbackRoutes.length > 0 && (
+      {!readOnly &&
+        onRetryFallbackRoutes &&
+        !isRouting &&
+        fallbackRoutes.length > 0 && (
         <div
           role="status"
           className="absolute map-status top-14 z-[1000] mx-auto flex max-w-[24rem] flex-wrap items-center gap-2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
@@ -732,7 +901,7 @@ export function MapView({ legs, readOnly = false }: MapViewProps) {
             type="button"
             variant="outline"
             size="xs"
-            onClick={() => retryFallbackRoutes(formatDistanceKm)}
+            onClick={onRetryFallbackRoutes}
           >
             <RotateCcw />
             {t('map.retry')}
@@ -750,7 +919,7 @@ export function MapView({ legs, readOnly = false }: MapViewProps) {
       )}
 
       <div className="map-bottom-bar pointer-events-none absolute inset-x-0 bottom-0 z-[1000] flex items-end justify-between gap-2">
-        <p className="pointer-events-auto max-w-[calc(100%-3.5rem)] rounded-md border bg-background px-2 py-1 text-xs leading-snug text-muted-foreground shadow-sm">
+        <p className="pointer-events-auto max-w-[calc(100%-3.5rem)] rounded-md border bg-background px-2 py-1 text-xs leading-snug text-pretty text-muted-foreground shadow-sm">
           <a
             href="https://www.openstreetmap.org/copyright"
             target="_blank"
@@ -770,7 +939,7 @@ export function MapView({ legs, readOnly = false }: MapViewProps) {
           </a>
         </p>
 
-        <div className="pointer-events-auto flex flex-col items-center gap-0.5 rounded-lg border bg-background/95 p-0.5 shadow-sm pointer-coarse:gap-1 pointer-coarse:p-1">
+        <div className="pointer-events-auto flex flex-col items-center gap-0.5 rounded-lg border bg-background/95 p-0.5 shadow-sm pointer-coarse:gap-1 pointer-coarse:p-1 print:hidden">
           <HelpTooltip>
             <HelpTooltipTrigger asChild>
               <span className="inline-flex">

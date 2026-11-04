@@ -6,6 +6,8 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // The Astro site owns the root path; the editor lives under /app/
+  base: '/app/',
   plugins: [
     react(),
     tailwindcss(),

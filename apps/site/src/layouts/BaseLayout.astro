@@ -1,0 +1,83 @@
+---
+import SiteFooter from '../components/SiteFooter.astro'
+import SiteHeader from '../components/SiteHeader.astro'
+import type { Language } from '../i18n/ui'
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  description: string
+  lang: Language
+  /** Path of the same page in the other language. */
+  alternatePath: string
+}
+
+const { title, description, lang, alternatePath } = Astro.props
+const otherLang: Language = lang === 'it' ? 'en' : 'it'
+
+// Canonical and alternate links need the production origin, which `site` owns
+const canonical = Astro.site
+  ? new URL(Astro.url.pathname, Astro.site).toString()
+  : undefined
+const alternate = Astro.site
+  ? new URL(alternatePath, Astro.site).toString()
+  : undefined
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Riparti" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content={lang === 'it' ? 'it_IT' : 'en_GB'} />
+    <meta name="twitter:card" content="summary" />
+
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#0a0a0a"
+      media="(prefers-color-scheme: dark)"
+    />
+
+    {canonical !== undefined && <link rel="canonical" href={canonical} />}
+    {
+      alternate !== undefined && (
+        <link rel="alternate" hreflang={otherLang} href={alternate} />
+      )
+    }
+
+    <script is:inline>
+      // Apply the saved or system theme before the first paint
+      try {
+        const stored = localStorage.getItem('backseat.theme')
+        const dark =
+          stored === 'dark' ||
+          (stored !== 'light' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+      } catch {
+        // Storage can be unavailable; the page keeps the system theme
+      }
+    </script>
+  </head>
+  <body class="flex min-h-svh flex-col">
+    <SiteHeader lang={lang} alternatePath={alternatePath} />
+    <main class="mx-auto w-full max-w-5xl flex-1 px-5">
+      <slot />
+    </main>
+    <SiteFooter lang={lang} />
+  </body>
+</html>

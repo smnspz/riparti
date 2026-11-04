@@ -1,0 +1,123 @@
+---
+import type { Language } from '../i18n/ui'
+import { ui } from '../i18n/ui'
+
+interface Feature {
+  readonly title: string
+  readonly body: string
+}
+
+interface LandingCopy {
+  readonly eyebrow: string
+  readonly title: string
+  readonly lead: string
+  readonly features: readonly Feature[]
+  readonly privacyNote: string
+  readonly privacyLink: string
+}
+
+interface Props {
+  lang: Language
+}
+
+const copy: Record<Language, LandingCopy> = {
+  it: {
+    eyebrow: 'Carburante e pedaggi, divisi',
+    title: 'Chi paga cosa, senza fare i conti a mente.',
+    lead: 'Riparti calcola la quota di ogni passeggero tratta per tratta, in centesimi esatti. Nessun account, nessun cookie: il viaggio resta nel tuo browser.',
+    features: [
+      {
+        title: 'Tratte e pedaggi',
+        body: 'Aggiungi le tappe, confronta il percorso più veloce con quello senza pedaggi e scegli chi viaggia in ogni tratta.',
+      },
+      {
+        title: 'Quote esatte',
+        body: 'Gli importi sono in centesimi interi, quindi la somma delle quote coincide sempre con il totale del viaggio.',
+      },
+      {
+        title: 'Riepilogo condivisibile',
+        body: 'Condividi il conto con un link: il viaggio è dentro il link, non su un server.',
+      },
+    ],
+    privacyNote:
+      'Nessun cookie, nessun tracciamento. Solo i dati tecnici che servono al viaggio, salvati nel browser.',
+    privacyLink: 'Leggi l’informativa',
+  },
+  en: {
+    eyebrow: 'Fuel and tolls, split',
+    title: 'Who owes what, without doing the maths.',
+    lead: 'Riparti splits fuel and tolls between passengers, leg by leg, in exact cents. No account, no cookies: the trip stays in your browser.',
+    features: [
+      {
+        title: 'Legs and tolls',
+        body: 'Add the stops, compare the fastest route with the toll-free one, and pick who travels on every leg.',
+      },
+      {
+        title: 'Exact shares',
+        body: 'Amounts are whole cents, so the shares always add up to the trip total exactly.',
+      },
+      {
+        title: 'A link to share',
+        body: 'Share the split with a link: the trip lives inside the link, not on a server.',
+      },
+    ],
+    privacyNote:
+      'No cookies, no tracking. Only the technical data the trip needs, stored in your browser.',
+    privacyLink: 'Read the privacy notice',
+  },
+}
+
+const { lang } = Astro.props
+const text = copy[lang]
+const chrome = ui[lang]
+---
+
+<section class="pt-16 pb-4 sm:pt-24">
+  <p
+    class="font-heading text-xs font-semibold tracking-[0.18em] text-primary uppercase"
+  >
+    {text.eyebrow}
+  </p>
+  <h1
+    class="mt-4 max-w-3xl font-heading text-4xl leading-[1.05] font-semibold tracking-tight text-balance text-foreground sm:text-6xl"
+  >
+    {text.title}
+  </h1>
+  <p class="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+    {text.lead}
+  </p>
+
+  <div class="mt-8 flex flex-wrap items-center gap-4">
+    <a
+      href={chrome.appHref}
+      class="rounded-md bg-primary px-5 py-2.5 font-medium text-primary-foreground transition-opacity hover:opacity-90"
+    >
+      {chrome.appCta}
+    </a>
+    <a
+      href={chrome.privacyHref}
+      class="text-sm text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
+    >
+      {text.privacyLink}
+    </a>
+  </div>
+</section>
+
+<section aria-label="Features" class="mt-16 grid gap-4 sm:grid-cols-3">
+  {
+    text.features.map((feature) => (
+      <article class="rounded-xl border border-border bg-card p-5 text-card-foreground">
+        <h2 class="font-heading text-base font-semibold tracking-tight">
+          {feature.title}
+        </h2>
+        <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {feature.body}
+        </p>
+      </article>
+    ))
+  }
+</section>
+
+<section class="mt-16 rounded-xl border border-border bg-muted/50 p-5 text-sm text-muted-foreground">
+  {text.privacyNote}
+</section>

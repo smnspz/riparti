@@ -10,7 +10,7 @@ import {
   Route,
   Wallet,
 } from 'lucide-react'
-import { calculateTrip, type TripResult } from '@/core'
+import type { TripResult } from '@/core'
 import { AppHeader } from '@/components/AppHeader'
 import { MapView } from '@/components/MapView'
 import {
@@ -29,7 +29,7 @@ import {
   normalizePayPalHandle,
 } from '@/lib/payment'
 import { routeColor } from '@/lib/routeColors'
-import { buildTrip } from '@/lib/trip'
+import { calculateDraftTrip } from '@/lib/trip'
 import type { SharedTrip } from '@/lib/shareLink'
 import type { LegDraft } from '@/types'
 import '@/App.css'
@@ -93,9 +93,7 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
   const calculation = useMemo(() => {
     try {
       return {
-        result: calculateTrip(
-          buildTrip(trip.passengers, trip.legs),
-        ),
+        result: calculateDraftTrip(trip.passengers, trip.legs),
         failure: null as unknown,
       }
     } catch (error) {
@@ -117,11 +115,35 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
             <CircleAlert />
           </span>
           <div className="flex flex-col gap-1">
-            <h2 className="font-heading text-lg font-semibold">
-              {t('shared.invalidTitle')}
+            <h2 className="font-heading text-xl font-semibold text-balance">
+              {t('shared.invalidTripTitle')}
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-pretty text-muted-foreground">
               {error ?? t('shared.invalidDescription')}
+            </p>
+          </div>
+          <Button asChild>
+            <a href={homeHref()}>{t('shared.openApp')}</a>
+          </Button>
+        </div>
+      </SharedTripShell>
+    )
+  }
+
+  // Return a clear empty state when the link carries no legs
+  if (result.legs.length === 0) {
+    return (
+      <SharedTripShell legs={trip.legs}>
+        <div className="flex flex-col items-start gap-4">
+          <span className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground">
+            <Route aria-hidden />
+          </span>
+          <div className="flex flex-col gap-1">
+            <h2 className="font-heading text-xl font-semibold text-balance">
+              {t('shared.emptyTitle')}
+            </h2>
+            <p className="text-sm text-pretty text-muted-foreground">
+              {t('shared.emptyDescription')}
             </p>
           </div>
           <Button asChild>
@@ -138,7 +160,14 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
     result.passengers.find((passenger) => passenger.id === trip.paidById) ??
     null
   const requestHandle = normalizePayPalHandle(trip.paypalHandle)
-  const canRequest = payer !== null && isValidPayPalHandle(requestHandle)
+  const hasRequestableShare =
+    payer !== null &&
+    result.passengers.some(
+      (passenger) =>
+        passenger.id !== payer.id && passenger.totalCents > 0,
+    )
+  const canRequest =
+    hasRequestableShare && isValidPayPalHandle(requestHandle)
   const namesById = new Map(
     result.passengers.map((passenger) => [passenger.id, passenger.name]),
   )
@@ -150,21 +179,23 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
     <SharedTripShell legs={trip.legs}>
       <section aria-labelledby="shared-total-title" className="flex flex-col gap-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <h2
+          <div className="flex min-w-0 flex-col gap-1">
+            <p
               id="shared-total-title"
               className="text-sm font-medium text-muted-foreground"
             >
               {t('results.total')}
-            </h2>
-            <p className="font-heading text-4xl font-semibold tracking-tight tabular-nums">
+            </p>
+            <p className="font-heading text-4xl font-semibold tracking-tight break-words tabular-nums max-[22rem]:text-3xl">
               {formatEuros(result.totalCents)}
             </p>
           </div>
           {payer !== null && (
-            <Badge variant="secondary" className="gap-1">
-              <Wallet aria-hidden className="size-3" />
-              {t('shared.paidBy', { name: payer.name })}
+            <Badge variant="secondary" className="max-w-full gap-1">
+              <Wallet aria-hidden className="size-3 shrink-0" />
+              <span className="min-w-0 truncate">
+                {t('shared.paidBy', { name: payer.name })}
+              </span>
             </Badge>
           )}
         </div>
@@ -176,7 +207,7 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
           })}
         </p>
 
-        <div className="grid grid-cols-3 divide-x rounded-lg border bg-background">
+        <div className="flex flex-wrap gap-px overflow-hidden rounded-lg border bg-border">
           <TripMetric
             icon={<Route aria-hidden />}
             label={t('shared.distance')}
@@ -208,7 +239,7 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2
             id="shared-shares-title"
-            className="font-heading text-base font-semibold"
+            className="font-heading text-xl font-semibold"
           >
             {t('results.summaryShares')}
           </h2>
@@ -238,14 +269,9 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
               <li key={passenger.id} className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                    <span className="truncate text-sm font-medium">
+                    <span className="min-w-0 break-words text-sm font-medium">
                       {passenger.name}
                     </span>
-                    {isPayer && (
-                      <Badge variant="secondary">
-                        {t('results.payerBadge')}
-                      </Badge>
-                    )}
                     <span
                       aria-label={t('shared.passengerLegs', {
                         legs:
@@ -280,10 +306,10 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
                     name: passenger.name,
                     percent: Math.round(percent),
                   })}
-                  className="h-1.5 overflow-hidden rounded-full bg-muted"
+                  className="split-bar h-1.5 overflow-hidden rounded-full bg-muted [forced-color-adjust:none] forced-colors:border forced-colors:border-[CanvasText] forced-colors:bg-[Canvas]"
                 >
                   <div
-                    className="shared-bar h-full rounded-full bg-primary"
+                    className="shared-bar h-full rounded-full bg-primary [forced-color-adjust:none] forced-colors:bg-[Highlight]"
                     style={{ width: `${percent}%` }}
                   />
                 </div>
@@ -297,7 +323,7 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
                       name: passenger.name,
                       amount: formatEuros(passenger.totalCents),
                     })}
-                    className="inline-flex w-fit items-center gap-1 rounded text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+                    className="shared-request inline-flex w-fit items-center gap-1 rounded text-xs font-medium text-primary underline decoration-primary/60 underline-offset-4 hover:decoration-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                   >
                     {t('results.request')}
                     <ArrowUpRight aria-hidden className="size-3" />
@@ -312,7 +338,7 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
       <section aria-labelledby="shared-legs-title" className="border-t pt-5">
         <h2
           id="shared-legs-title"
-          className="font-heading text-base font-semibold"
+          className="font-heading text-xl font-semibold"
         >
           {t('results.summaryLegs')}
         </h2>
@@ -333,7 +359,7 @@ export function SharedTripView({ trip }: SharedTripViewProps) {
       <footer className="flex flex-wrap items-center justify-end gap-2 border-t pt-4 text-xs text-muted-foreground">
         <a
           href={homeHref()}
-          className="inline-flex items-center gap-1 rounded font-medium text-foreground underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          className="inline-flex items-center gap-1 rounded font-medium text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none print:hidden"
         >
           {t('shared.newTrip')}
           <ArrowUpRight aria-hidden className="size-3" />
@@ -361,25 +387,18 @@ function SharedTripShell({
   const { t } = useI18n()
 
   return (
-    <div className="flex min-h-svh flex-col bg-muted/40 lg:h-svh lg:overflow-hidden">
-      <AppHeader title={t('shared.title')}>
-        <Button asChild variant="ghost" size="sm">
-          <a href={homeHref()}>
-            {t('shared.newTrip')}
-            <ArrowUpRight data-icon="inline-end" />
-          </a>
-        </Button>
-      </AppHeader>
+    <div className="shared-shell flex min-h-svh flex-col bg-muted/40 lg:h-svh lg:overflow-hidden">
+      <AppHeader title={t('shared.title')} />
 
-      <main className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)]">
+      <main className="shared-main grid min-h-0 flex-1 grid-cols-1 max-lg:grid-rows-[auto_minmax(min-content,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)]">
         <section
           aria-label={t('map.title')}
-          className="relative isolate h-[46svh] min-h-72 border-b max-lg:order-1 lg:h-auto lg:border-r lg:border-b-0"
+          className="shared-map relative isolate h-[46svh] min-h-72 border-b max-lg:order-1 lg:h-auto lg:border-r lg:border-b-0"
         >
           <MapView legs={legs} readOnly />
         </section>
 
-        <aside className="min-h-0 overflow-y-auto bg-background p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:p-6 max-lg:order-2 lg:p-7">
+        <aside className="shared-aside sidebar-scroll min-h-0 overflow-x-hidden overflow-y-auto bg-background p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:p-6 max-lg:order-2 lg:p-7">
           <div className="flex flex-col gap-5">{children}</div>
         </aside>
       </main>
@@ -397,7 +416,7 @@ export function SharedTripError() {
   const { t } = useI18n()
 
   return (
-    <div className="grid min-h-svh place-items-center bg-muted/40 p-6">
+    <main className="grid min-h-svh place-items-center bg-muted/40 p-6">
       <div className="flex max-w-md flex-col items-start gap-4 rounded-xl border bg-background p-6">
         <span className="grid size-10 place-items-center rounded-full bg-destructive/10 text-destructive">
           <CircleAlert />
@@ -414,6 +433,6 @@ export function SharedTripError() {
           <a href={homeHref()}>{t('shared.openApp')}</a>
         </Button>
       </div>
-    </div>
+    </main>
   )
 }

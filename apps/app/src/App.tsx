@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
-import { calculateTrip } from '@/core'
 import type { TripResult } from '@/core'
 import { AppHeader } from '@/components/AppHeader'
 import { LegEditor } from '@/components/LegEditor'
@@ -14,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n'
 import type { Translate } from '@/i18n'
 import { translateTripError } from '@/i18n/tripErrors'
-import { buildTrip } from '@/lib/trip'
+import { calculateDraftTrip } from '@/lib/trip'
 import { useTripStore } from '@/store/tripStore'
 import type { LegDraft, PassengerDraft } from '@/types'
 import '@/App.css'
@@ -33,7 +32,7 @@ function computeTrip(
   t: Translate,
 ): { result: TripResult | null; error: string | null } {
   try {
-    return { result: calculateTrip(buildTrip(passengers, legs)), error: null }
+    return { result: calculateDraftTrip(passengers, legs), error: null }
   } catch (error) {
     return {
       result: null,
@@ -48,7 +47,7 @@ function computeTrip(
  * The trip itself lives in the store, so this component only lays the pieces
  * out and keeps the example leg localized.
  *
- * @returns The Backseat single-page app.
+ * @returns The Riparti single-page app.
  */
 export default function App() {
   // Initializations
@@ -59,6 +58,7 @@ export default function App() {
   const clearLegs = useTripStore((state) => state.clearLegs)
   const localizeSeed = useTripStore((state) => state.localizeSeed)
   const routeSeedLeg = useTripStore((state) => state.routeSeedLeg)
+  const retryFallbackRoutes = useTripStore((state) => state.retryFallbackRoutes)
   const resultsRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<HTMLElement>(null)
   const [resultsInView, setResultsInView] = useState(false)
@@ -181,7 +181,10 @@ export default function App() {
           aria-labelledby="map-title"
           className="app-map relative isolate min-h-0 border-l max-md:order-1 max-md:h-[max(52svh,20rem)] max-md:border-b max-md:border-l-0"
         >
-          <MapView legs={legs} />
+          <MapView
+            legs={legs}
+            onRetryFallbackRoutes={() => retryFallbackRoutes(formatDistanceKm)}
+          />
           <div className="map-top-left absolute z-[1100]">
             <UndoRedo />
           </div>

@@ -1,0 +1,26 @@
+---
+import type { Language } from '../i18n/ui'
+import { ui } from '../i18n/ui'
+
+interface Props {
+  lang: Language
+}
+
+const { lang } = Astro.props
+const copy = ui[lang]
+const year = new Date().getFullYear()
+---
+
+<footer class="mt-20 border-t border-border">
+  <div
+    class="mx-auto flex w-full max-w-5xl flex-col gap-3 px-5 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
+  >
+    <p>© {year} Riparti — {copy.footerNote}</p>
+    <a
+      href={copy.privacyHref}
+      class="text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
+    >
+      {copy.privacy}
+    </a>
+  </div>
+</footer>

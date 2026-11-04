@@ -6,9 +6,10 @@ export type TranslationParams = Record<string, string | number>
 
 /** Italian dictionary, the reference for every translation key. */
 export const it = {
-  'app.documentTitle': 'Backseat — Dividi carburante e pedaggi',
+  'app.documentTitle': 'Riparti — Dividi carburante e pedaggi',
   'app.invalidTrip': 'Il viaggio non è valido.',
   'app.editorTitle': 'Dividi il viaggio',
+  'app.loading': 'Caricamento…',
 
   'language.label': 'Lingua',
   'language.italian': 'Italiano',
@@ -128,11 +129,16 @@ export const it = {
   'results.legTotal': 'Totale {total} · {shares}',
 
   'shared.title': 'Riepilogo viaggio',
-  'shared.documentTitle': 'Riepilogo viaggio — Backseat',
+  'shared.documentTitle': 'Riepilogo viaggio — Riparti',
   'shared.newTrip': 'Nuovo viaggio',
-  'shared.openApp': 'Apri Backseat',
+  'shared.openApp': 'Apri Riparti',
   'shared.invalidTitle': 'Link non valido',
-  'shared.invalidDocumentTitle': 'Link non valido — Backseat',
+  'shared.invalidTripTitle': 'Impossibile mostrare il viaggio',
+  'shared.emptyTitle': 'Viaggio senza tratte',
+  'shared.emptyDescription':
+    'Questo riepilogo non contiene ancora tratte. Apri Riparti per aggiungerne una.',
+  'shared.invalidDocumentTitle': 'Link non valido — Riparti',
+  'shared.invalidTripDocumentTitle': 'Viaggio non disponibile — Riparti',
   'shared.invalidDescription':
     'Il link è incompleto o danneggiato. Chiedi un nuovo link a chi ha creato il viaggio.',
   'shared.paidBy': 'Pagato da {name}',
@@ -152,6 +158,7 @@ export const it = {
   'map.title': 'Mappa del viaggio',
   'map.markerStart': 'Tratta {n}, partenza: {place}',
   'map.markerEnd': 'Tratta {n}, arrivo: {place}',
+  'map.markerJunction': 'Tratte {legs}: {place}',
   'map.legTooltip': '{name} · {distance} km',
   'map.legTooltipRoundTrip': '{name} · {distance} km · andata e ritorno',
   'map.findingRoute': 'Calcolo del percorso stradale…',
@@ -182,9 +189,10 @@ export type TranslationKey = keyof typeof it
 
 /** English dictionary, required to cover every Italian key. */
 export const en: Record<TranslationKey, string> = {
-  'app.documentTitle': 'Backseat — Split fuel and tolls',
+  'app.documentTitle': 'Riparti — Split fuel and tolls',
   'app.invalidTrip': 'The trip is not valid.',
   'app.editorTitle': 'Split the trip',
+  'app.loading': 'Loading…',
 
   'language.label': 'Language',
   'language.italian': 'Italian',
@@ -302,11 +310,16 @@ export const en: Record<TranslationKey, string> = {
   'results.legTotal': 'Total {total} · {shares}',
 
   'shared.title': 'Trip summary',
-  'shared.documentTitle': 'Trip summary — Backseat',
+  'shared.documentTitle': 'Trip summary — Riparti',
   'shared.newTrip': 'New trip',
-  'shared.openApp': 'Open Backseat',
+  'shared.openApp': 'Open Riparti',
   'shared.invalidTitle': 'Invalid link',
-  'shared.invalidDocumentTitle': 'Invalid link — Backseat',
+  'shared.invalidTripTitle': "This trip can't be shown",
+  'shared.emptyTitle': 'Trip without legs',
+  'shared.emptyDescription':
+    'This summary has no legs yet. Open Riparti to add one.',
+  'shared.invalidDocumentTitle': 'Invalid link — Riparti',
+  'shared.invalidTripDocumentTitle': 'Trip unavailable — Riparti',
   'shared.invalidDescription':
     'The link is incomplete or damaged. Ask whoever created the trip for a new link.',
   'shared.paidBy': 'Paid by {name}',
@@ -314,7 +327,7 @@ export const en: Record<TranslationKey, string> = {
   'shared.distance': 'Distance',
   'shared.fuel': 'Fuel',
   'shared.tolls': 'Tolls',
-  'shared.requestHint': 'Request the share with PayPal',
+  'shared.requestHint': 'Request each share via PayPal',
   'shared.passengerLegs': 'Legs: {legs}',
   'shared.noLegs': 'No legs',
   'shared.shareOfTotal': '{name}: {percent}% of the total',
@@ -326,6 +339,7 @@ export const en: Record<TranslationKey, string> = {
   'map.title': 'Trip map',
   'map.markerStart': 'Leg {n}, start: {place}',
   'map.markerEnd': 'Leg {n}, end: {place}',
+  'map.markerJunction': 'Legs {legs}: {place}',
   'map.legTooltip': '{name} · {distance} km',
   'map.legTooltipRoundTrip': '{name} · {distance} km · round trip',
   'map.findingRoute': 'Finding the road route…',
