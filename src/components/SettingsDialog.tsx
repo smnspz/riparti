@@ -81,26 +81,24 @@ export function SettingsDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <div className="flex rounded-lg border bg-background/95 p-0.5 shadow-sm pointer-coarse:p-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DialogTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="pointer-coarse:size-11"
-                aria-label={t('settings.open')}
-              >
-                <Settings />
-              </Button>
-            </DialogTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" align="end" sideOffset={4}>
-            {t('settings.open')}
-          </TooltipContent>
-        </Tooltip>
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DialogTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="pointer-coarse:size-11"
+              aria-label={t('settings.open')}
+            >
+              <Settings />
+            </Button>
+          </DialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="end" sideOffset={4}>
+          {t('settings.open')}
+        </TooltipContent>
+      </Tooltip>
 
       <DialogContent
         className="max-h-[calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-y-auto sm:max-w-md"

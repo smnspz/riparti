@@ -308,8 +308,8 @@ export const useTripStore = create<TripStore>()(
               return {}
             }
 
-            // Reuse the first leg's fuel settings as a sensible default
-            const template = state.legs.at(0)
+            // Reuse the last leg's fuel settings as a sensible default
+            const template = state.legs.at(-1)
             const leg: LegDraft = {
               id: crypto.randomUUID(),
               start: null,
@@ -328,10 +328,10 @@ export const useTripStore = create<TripStore>()(
               passengerIds: state.passengers.map((passenger) => passenger.id),
             }
 
-            // Prepend the leg so it appears above the existing ones
+            // Append the leg so it stays last in travel order
             return {
               ...historyFor(state, null, Date.now()),
-              legs: [leg, ...state.legs],
+              legs: [...state.legs, leg],
             }
           }),
 
@@ -525,10 +525,23 @@ export const useTripStore = create<TripStore>()(
     },
     {
       name: TRIP_STORAGE_KEY,
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() =>
         createDebouncedStorage(resolveStorage()),
       ),
+      migrate: (persistedState, version) => {
+        const stored = persistedState as Partial<PersistedTrip> | undefined
+        if (
+          stored === undefined ||
+          version >= 2 ||
+          stored.legs === undefined
+        ) {
+          return stored
+        }
+
+        // Trips saved before version 2 kept the newest leg first
+        return { ...stored, legs: [...stored.legs].reverse() }
+      },
       partialize: (state): PersistedTrip => ({
         passengers: state.passengers,
         legs: state.legs,

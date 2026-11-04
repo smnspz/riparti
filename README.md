@@ -50,9 +50,10 @@ immediately visible.
 - **Paid by** in the passengers card marks who fronted the trip. With a
   PayPal.Me link saved in settings, every other passenger gets a **Request**
   link pre-filled with their exact share.
-- **Share summary** opens a preview of a plain-text breakdown with the total,
-  passenger shares, payment links, and leg details, then copies it or opens the
-  system share sheet.
+- **Share summary** creates a link to a read-only page with the trip map and a
+  visual split: the total, each passenger's share, who paid, and the fuel and
+  tolls behind every leg. The trip is encoded in the link itself, so the page
+  works without an account or a server; edit the trip and share a new link.
 
 The interface is available in Italian (the default) and English, and the theme
 can follow the operating system (the default), stay light, or stay dark. Open

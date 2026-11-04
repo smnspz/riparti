@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decodePolyline } from './polyline'
+import { decodePolyline, encodePolyline } from './polyline'
 
 /** Precision-5 example from the Google polyline algorithm documentation. */
 const GOOGLE_EXAMPLE = '_p~iF~ps|U_ulLnnqC_mqNvxq`@'
@@ -26,5 +26,23 @@ describe('decodePolyline', () => {
 
   it('returns no points for an empty string', () => {
     expect(decodePolyline('', 6)).toEqual([])
+  })
+})
+
+describe('encodePolyline', () => {
+  it('round-trips the documented precision-5 example', () => {
+    expect(encodePolyline(decodePolyline(GOOGLE_EXAMPLE, 5), 5)).toBe(
+      GOOGLE_EXAMPLE,
+    )
+  })
+
+  it('round-trips precision-6 coordinates', () => {
+    expect(encodePolyline(decodePolyline(VALHALLA_EXAMPLE, 6), 6)).toBe(
+      VALHALLA_EXAMPLE,
+    )
+  })
+
+  it('returns an empty string without points', () => {
+    expect(encodePolyline([])).toBe('')
   })
 })

@@ -10,6 +10,7 @@ import {
   translate,
   type Language,
   type Translate,
+  type TranslationKey,
 } from './messages'
 
 /** Local storage key holding the selected language. */
@@ -63,11 +64,24 @@ export function readStoredLanguage(): Language {
  * Provide translations and locale-aware formatters to the app.
  *
  * @param children - React tree that can call `useI18n`.
+ * @param language - Language forced by a shared view, or undefined to use and
+ * persist the language chosen on this device.
+ * @param documentTitleKey - Translation key used for the document title.
  * @returns The i18n context provider.
  */
-export function I18nProvider({ children }: { children: ReactNode }) {
+export function I18nProvider({
+  children,
+  language: forcedLanguage,
+  documentTitleKey = 'app.documentTitle',
+}: {
+  children: ReactNode
+  language?: Language
+  documentTitleKey?: TranslationKey
+}) {
   // Initializations
-  const [language, setLanguageState] = useState<Language>(readStoredLanguage)
+  const [storedLanguage, setStoredLanguageState] =
+    useState<Language>(readStoredLanguage)
+  const language = forcedLanguage ?? storedLanguage
 
   /**
    * Change the language and remember it for the next visit.
@@ -76,7 +90,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
    * @returns Nothing. Updates state and local storage.
    */
   function setLanguage(nextLanguage: Language): void {
-    setLanguageState(nextLanguage)
+    setStoredLanguageState(nextLanguage)
     try {
       window.localStorage.setItem(STORAGE_KEY, nextLanguage)
     } catch {
@@ -87,8 +101,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   // Keep the document metadata in sync with the selected language
   useEffect(() => {
     document.documentElement.lang = language
-    document.title = messages[language]['app.documentTitle']
-  }, [language])
+    document.title = messages[language][documentTitleKey]
+  }, [language, documentTitleKey])
 
   // Expose translations and formatters bound to the current language
   const value: I18nContextValue = {

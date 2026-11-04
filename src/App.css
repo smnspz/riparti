@@ -75,19 +75,51 @@
   box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
 }
 
+/* Grow the shared summary bars once, from the direction the data reads. */
+.shared-bar {
+  transform-origin: left;
+  animation: shared-bar-grow 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes shared-bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shared-bar {
+    animation: none;
+  }
+}
+
 .dark .leaflet-tile-pane {
   filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
 }
 
-/* Keep the map controls clear of notches and rounded corners. */
-.map-top-left {
-  top: max(0.75rem, env(safe-area-inset-top));
-  left: max(0.75rem, env(safe-area-inset-left));
+/* Keep the header clear of notches and rounded corners. */
+.app-header {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  padding-bottom: 0.75rem;
+  padding-left: max(1rem, env(safe-area-inset-left));
 }
 
-.map-top-right {
-  top: max(0.75rem, env(safe-area-inset-top));
-  right: max(0.75rem, env(safe-area-inset-right));
+@media (min-width: 640px) {
+  .app-header {
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+  }
+}
+
+/* Keep the map controls clear of notches and rounded corners. */
+.map-top-left {
+  top: 0.75rem;
+  left: max(0.75rem, env(safe-area-inset-left));
 }
 
 .map-bottom-bar {

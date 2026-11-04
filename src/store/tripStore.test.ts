@@ -156,6 +156,16 @@ describe('trip store history', () => {
     expect(useTripStore.getState().future).toHaveLength(0)
     expect(useTripStore.getState().past).toHaveLength(1)
   })
+
+  it('appends a new leg so existing travel numbers stay put', () => {
+    const before = useTripStore.getState().legs.map((leg) => leg.id)
+
+    useTripStore.getState().addLeg()
+    const after = useTripStore.getState().legs
+
+    expect(after).toHaveLength(before.length + 1)
+    expect(after.slice(0, -1).map((leg) => leg.id)).toEqual(before)
+  })
 })
 
 describe('trip store persistence', () => {
@@ -190,6 +200,29 @@ describe('trip store persistence', () => {
     expect(fresh.useTripStore.getState().paidById).toBe('zoe')
     expect(fresh.useTripStore.getState().paypalHandle).toBe('zoe')
     expect(fresh.useTripStore.getState().past).toHaveLength(0)
+  })
+
+  it('restores travel order for trips saved before version 2', async () => {
+    memory.values.set(
+      STORAGE_KEY,
+      JSON.stringify({
+        state: {
+          passengers: [{ id: 'zoe', name: 'Zoe' }],
+          legs: [createLeg('leg-2'), createLeg('leg-1')],
+          paidById: null,
+          paypalHandle: '',
+        },
+        version: 1,
+      }),
+    )
+
+    vi.resetModules()
+    const fresh = await import('./tripStore')
+
+    expect(fresh.useTripStore.getState().legs.map((leg) => leg.id)).toEqual([
+      'leg-1',
+      'leg-2',
+    ])
   })
 
   it('saves the trip without the undo history', () => {

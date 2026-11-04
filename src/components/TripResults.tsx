@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   ArrowUpRight,
   Check,
   CircleAlert,
   Copy,
+  ExternalLink,
   Share2,
 } from 'lucide-react'
 import type { TripResult } from '@/core'
@@ -26,6 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { useI18n } from '@/i18n'
 import { formatLegName } from '@/lib/format'
 import {
@@ -33,6 +35,7 @@ import {
   isValidPayPalHandle,
   normalizePayPalHandle,
 } from '@/lib/payment'
+import { buildShareUrl, type SharedTrip } from '@/lib/shareLink'
 import { useTripStore } from '@/store/tripStore'
 
 interface TripResultsProps {
@@ -46,7 +49,8 @@ interface TripResultsProps {
  * Card showing the trip total, each passenger's share, and the leg breakdown.
  *
  * Each share can be requested through PayPal.Me once the payer and their
- * handle are known, and the whole summary can be shared as plain text.
+ * handle are known, and the whole summary can be shared as a link with a
+ * read-only map and visual breakdown.
  *
  * @param result - Calculation result, or null when the trip is invalid.
  * @param error - Validation message, or null when the trip is valid.
@@ -54,13 +58,15 @@ interface TripResultsProps {
  */
 export function TripResults({ result, error }: TripResultsProps) {
   // Initializations
-  const { t, formatDistanceKm, formatEuros, formatLiters } = useI18n()
+  const { t, language, formatDistanceKm, formatEuros, formatLiters } =
+    useI18n()
+  const passengers = useTripStore((state) => state.passengers)
   const legs = useTripStore((state) => state.legs)
   const paidById = useTripStore((state) => state.paidById)
   const paypalHandle = useTripStore((state) => state.paypalHandle)
   const setSettingsOpen = useTripStore((state) => state.setSettingsOpen)
-  const [copied, setCopied] = useState(false)
-  const [copyFailed, setCopyFailed] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [linkCopyFailed, setLinkCopyFailed] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const focusPayerOnClose = useRef(false)
   const legsCount = legs.length
@@ -107,106 +113,56 @@ export function TripResults({ result, error }: TripResultsProps) {
     }
   })
 
-  const summaryText = result === null ? '' : buildSummaryText()
+  const shareTrip = useMemo<SharedTrip>(
+    () => ({
+      language,
+      passengers,
+      legs,
+      paidById,
+      paypalHandle: canRequest ? requestHandle : '',
+    }),
+    [language, passengers, legs, paidById, canRequest, requestHandle],
+  )
+  const shareUrl = useMemo(
+    () => (shareOpen ? buildShareUrl(shareTrip, window.location.href) : ''),
+    [shareOpen, shareTrip],
+  )
 
   /**
-   * Build the plain-text summary shared with passengers.
+   * Copy the summary link to the clipboard.
    *
-   * @returns The summary text, or an empty string without a result.
+   * @returns Nothing. Writes the link and reports the outcome.
    */
-  function buildSummaryText(): string {
-    if (result === null) {
-      return ''
-    }
-
-    // Write the total and who paid
-    const lines = [
-      t('results.summaryTitle'),
-      '',
-      `${t('results.total')}: ${formatEuros(result.totalCents)}`,
-    ]
-    if (payer !== null) {
-      lines.push(`${t('payment.paidBy')}: ${payer.name}`)
-    }
-
-    // Write each passenger's share, with a payment link when available
-    lines.push('', t('results.summaryShares'))
-    for (const passenger of result.passengers) {
-      const amount = formatEuros(passenger.totalCents)
-      const isPayer = passenger.id === payer?.id
-      const requestUrl =
-        canRequest && !isPayer
-          ? buildPayPalMeUrl(requestHandle, passenger.totalCents)
-          : null
-      if (isPayer) {
-        lines.push(
-          `- ${t('results.summaryPayer', { name: passenger.name, amount })}`,
-        )
-      } else {
-        lines.push(
-          `- ${t('results.summaryPassenger', { name: passenger.name, amount })}`,
-        )
-        if (requestUrl !== null) {
-          lines.push(
-            `  ${t('results.summaryPaypal', { url: requestUrl })}`,
-          )
-        }
-      }
-    }
-
-    // Write each leg as its own readable block
-    lines.push('', t('results.summaryLegs'))
-    legSummaries.forEach((leg, index) => {
-      if (index > 0) {
-        lines.push('')
-      }
-      lines.push(leg.title)
-      lines.push(`  ${leg.summary}`)
-      lines.push(
-        `  ${t('results.summaryLegTotal', { total: leg.totalAmount })}`,
-      )
-      lines.push(
-        `  ${t('results.summaryLegShares', { shares: leg.shares })}`,
-      )
-    })
-
-    return lines.join('\n')
-  }
-
-  /**
-   * Copy the summary to the clipboard.
-   *
-   * @returns Nothing. Writes the text and reports the outcome.
-   */
-  async function handleCopy(): Promise<void> {
-    if (summaryText === '') {
+  async function handleCopyLink(): Promise<void> {
+    if (shareUrl === '') {
       return
     }
 
     try {
-      await navigator.clipboard.writeText(summaryText)
-      setCopyFailed(false)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(shareUrl)
+      setLinkCopyFailed(false)
+      setLinkCopied(true)
+      window.setTimeout(() => setLinkCopied(false), 2000)
     } catch {
-      setCopyFailed(true)
+      setLinkCopyFailed(true)
     }
   }
 
   /**
-   * Open the system share sheet with the summary.
+   * Open the system share sheet with the summary link.
    *
    * @returns Nothing. Falls back to copying when sharing fails.
    */
   async function handleNativeShare(): Promise<void> {
-    if (summaryText === '') {
+    if (shareUrl === '') {
       return
     }
 
     try {
       await navigator.share({
-        title: t('results.summaryTitle'),
-        text: summaryText,
+        title: t('results.share'),
+        text: t('results.shareDescription'),
+        url: shareUrl,
       })
     } catch (shareError) {
       if (
@@ -215,7 +171,7 @@ export function TripResults({ result, error }: TripResultsProps) {
       ) {
         return
       }
-      await handleCopy()
+      await handleCopyLink()
     }
   }
 
@@ -361,7 +317,16 @@ export function TripResults({ result, error }: TripResultsProps) {
               ))}
             </div>
 
-            <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+            <Dialog
+              open={shareOpen}
+              onOpenChange={(open) => {
+                setShareOpen(open)
+                if (!open) {
+                  setLinkCopied(false)
+                  setLinkCopyFailed(false)
+                }
+              }}
+            >
               <DialogTrigger asChild>
                 <Button type="button" variant="outline" className="w-full">
                   <Share2 />
@@ -419,21 +384,43 @@ export function TripResults({ result, error }: TripResultsProps) {
                   </div>
                 )}
 
-                <pre
-                  tabIndex={0}
-                  aria-label={t('results.summaryTitle')}
-                  className="max-h-[50dvh] overflow-auto rounded-lg border bg-muted/30 p-3 font-sans text-xs leading-relaxed whitespace-pre-wrap break-words outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  {summaryText}
-                </pre>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {t('results.shareLinkLabel')}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      readOnly
+                      value={shareUrl}
+                      aria-label={t('results.shareLinkLabel')}
+                      onFocus={(event) => {
+                        event.currentTarget.select()
+                      }}
+                      className="min-w-0 flex-1 text-xs"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => void handleCopyLink()}
+                      aria-label={t('results.copyLink')}
+                      title={t('results.copyLink')}
+                    >
+                      {linkCopied ? <Check /> : <Copy />}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t('results.shareLinkHint')}
+                  </p>
+                </div>
 
-                {copyFailed && (
+                {linkCopyFailed && (
                   <p className="text-xs text-destructive" role="alert">
-                    {t('results.copyFailed')}
+                    {t('results.linkCopyFailed')}
                   </p>
                 )}
                 <span role="status" className="sr-only">
-                  {copied ? t('results.copied') : ''}
+                  {linkCopied ? t('results.linkCopied') : ''}
                 </span>
 
                 <DialogFooter>
@@ -442,13 +429,21 @@ export function TripResults({ result, error }: TripResultsProps) {
                       {t('results.close')}
                     </Button>
                   </DialogClose>
+                  <Button asChild variant="outline">
+                    <a href={shareUrl} target="_blank" rel="noreferrer">
+                      <ExternalLink />
+                      {t('results.openPreview')}
+                    </a>
+                  </Button>
                   <Button
                     type="button"
                     variant={canNativeShare ? 'outline' : 'default'}
-                    onClick={() => void handleCopy()}
+                    onClick={() => void handleCopyLink()}
                   >
-                    {copied ? <Check /> : <Copy />}
-                    {copied ? t('results.copied') : t('results.copy')}
+                    {linkCopied ? <Check /> : <Copy />}
+                    {linkCopied
+                      ? t('results.linkCopied')
+                      : t('results.copyLink')}
                   </Button>
                   {canNativeShare && (
                     <Button

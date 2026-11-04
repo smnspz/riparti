@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { calculateTrip } from '@/core'
 import type { TripResult } from '@/core'
+import { AppHeader } from '@/components/AppHeader'
 import { LegEditor } from '@/components/LegEditor'
 import { MapView } from '@/components/MapView'
 import { PassengerList } from '@/components/PassengerList'
@@ -108,10 +109,15 @@ export default function App() {
   }, [language, localizeSeed])
 
   const calculation = computeTrip(passengers, legs, t)
+  const displayedLegs = legs
+    .map((leg, index) => ({ leg, index }))
+    .reverse()
 
   return (
     <div className="app-shell flex h-dvh flex-col bg-muted/40 max-md:h-auto max-md:min-h-svh md:overflow-hidden">
-      <h1 className="sr-only">Backseat</h1>
+      <AppHeader title={t('app.editorTitle')}>
+        <SettingsDialog />
+      </AppHeader>
 
       <main className="app-main grid min-h-0 flex-1 grid-cols-[minmax(360px,430px)_1fr] max-md:grid-cols-1 md:grid-cols-[minmax(320px,340px)_1fr] lg:grid-cols-[minmax(360px,430px)_1fr]">
         <aside className="app-aside sidebar-scroll flex min-h-0 flex-col gap-5 overflow-y-auto overscroll-contain p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] max-md:order-2 max-md:overflow-visible [&>*]:shrink-0">
@@ -158,7 +164,7 @@ export default function App() {
               </p>
             ) : (
               <div className="flex flex-col gap-3">
-                {legs.map((leg, index) => (
+                {displayedLegs.map(({ leg, index }) => (
                   <LegEditor key={leg.id} leg={leg} index={index} />
                 ))}
               </div>
@@ -178,9 +184,6 @@ export default function App() {
           <MapView legs={legs} />
           <div className="map-top-left absolute z-[1100]">
             <UndoRedo />
-          </div>
-          <div className="map-top-right absolute z-[1100]">
-            <SettingsDialog />
           </div>
         </section>
       </main>

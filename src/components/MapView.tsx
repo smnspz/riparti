@@ -38,6 +38,8 @@ const DEFAULT_ZOOM = 6
 interface MapViewProps {
   /** Legs currently declared in the editor. */
   legs: LegDraft[]
+  /** Whether the map only presents the trip, without retry actions. */
+  readOnly?: boolean
 }
 
 /** Zoom level of the map and the limits it can reach. */
@@ -581,9 +583,10 @@ const FallbackMarker = memo(function FallbackMarker({
  * history and settings sit in the top corners, so no control can cover another.
  *
  * @param legs - Legs currently declared in the editor.
+ * @param readOnly - Whether the map only presents the trip.
  * @returns The map pane with its overlays.
  */
-export function MapView({ legs }: MapViewProps) {
+export function MapView({ legs, readOnly = false }: MapViewProps) {
   // Initializations
   const { t, formatDistanceKm } = useI18n()
   const { resolvedTheme } = useTheme()
@@ -708,7 +711,7 @@ export function MapView({ legs }: MapViewProps) {
       {isRouting && (
         <div
           role="status"
-          className="absolute map-status top-[calc(env(safe-area-inset-top)+3.5rem)] z-[1000] mx-auto flex max-w-[24rem] items-center gap-2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm max-lg:top-[calc(env(safe-area-inset-top)+4.5rem)]"
+          className="absolute map-status top-14 z-[1000] mx-auto flex max-w-[24rem] items-center gap-2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
         >
           <LoaderCircle
             aria-hidden
@@ -718,10 +721,10 @@ export function MapView({ legs }: MapViewProps) {
         </div>
       )}
 
-      {!isRouting && fallbackRoutes.length > 0 && (
+      {!readOnly && !isRouting && fallbackRoutes.length > 0 && (
         <div
           role="status"
-          className="absolute map-status top-[calc(env(safe-area-inset-top)+3.5rem)] z-[1000] mx-auto flex max-w-[24rem] flex-wrap items-center gap-2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm max-lg:top-[calc(env(safe-area-inset-top)+4.5rem)]"
+          className="absolute map-status top-14 z-[1000] mx-auto flex max-w-[24rem] flex-wrap items-center gap-2 rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
         >
           <TriangleAlert aria-hidden className="size-3.5 shrink-0" />
           <span className="flex-1">{t('map.routeUnavailable')}</span>
@@ -737,10 +740,10 @@ export function MapView({ legs }: MapViewProps) {
         </div>
       )}
 
-      {showEmptyHint && (
+      {showEmptyHint && !readOnly && (
         <div
           role="status"
-          className="absolute map-status top-[calc(env(safe-area-inset-top)+3.5rem)] z-[1000] mx-auto max-w-[24rem] rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm max-lg:top-[calc(env(safe-area-inset-top)+4.5rem)]"
+          className="absolute map-status top-14 z-[1000] mx-auto max-w-[24rem] rounded-lg border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm"
         >
           {t('map.emptyHint')}
         </div>
